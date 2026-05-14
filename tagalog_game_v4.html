@@ -325,7 +325,14 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradi
 .unlock-toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);z-index:999;background:var(--surface);border:1px solid var(--green-border);color:var(--green);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.85rem;padding:10px 20px;border-radius:12px;opacity:0;transition:all .4s cubic-bezier(.34,1.3,.64,1);pointer-events:none;white-space:nowrap}
 .unlock-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── PWA INSTALL BANNER (Android/Desktop) ── */
+/* ── QUIZ HINT ── */
+.hint-trigger{display:none;text-align:center;margin-top:14px}
+.hint-trigger a{font-size:.72rem;color:var(--muted2);cursor:pointer;text-decoration:none;border-bottom:1px dashed var(--muted2);padding-bottom:1px;transition:color .15s}
+.hint-trigger a:hover{color:var(--muted)}
+.hint-box{display:none;margin-top:10px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;animation:fadeUp .3s ease both}
+.hint-box-label{font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2);margin-bottom:5px;font-weight:600}
+.hint-box-text{font-size:.82rem;color:var(--muted);line-height:1.5;font-style:italic}
+
 .install-banner{position:fixed;bottom:calc(20px + var(--sab));left:50%;transform:translateX(-50%) translateY(120px);z-index:1000;background:var(--surface);border:1px solid var(--gold-border);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;max-width:400px;width:calc(100% - 40px);box-shadow:0 8px 40px rgba(0,0,0,0.6);transition:transform .45s cubic-bezier(.34,1.2,.64,1),opacity .45s ease;opacity:0;pointer-events:none}
 .install-banner.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all}
 .install-banner-icon{font-size:2.2rem;flex-shrink:0}
@@ -766,7 +773,115 @@ let learnSession={};
 let speedInterval=null;
 let activeLessonId=null;
 
-function save(){localStorage.setItem('tg_v4',JSON.stringify(STATE))}
+// Hint descriptions — plain English memory aids
+const HINTS = {
+  'Kumusta?':'A casual greeting, like asking "how\'s it going?" — used any time of day',
+  'Salamat':'The everyday word for thank you — one of the most important words to know',
+  'Walang anuman':'Literally "it\'s nothing" — the warm Tagalog way to say you\'re welcome',
+  'Paumanhin':'Used when you need to say sorry or excuse me — polite and formal',
+  'Oo':'Simply yes — short, casual, used in everyday speech',
+  'Hindi':'Simply no — used to deny or disagree with something',
+  'Po':'A word added to sentences to show respect to elders or strangers',
+  'Opo':'A respectful yes — more formal than "oo", used with parents or elders',
+  'Magandang umaga':'A morning greeting combining "beautiful" (maganda) and "morning" (umaga)',
+  'Magandang hapon':'An afternoon greeting — hapon means afternoon',
+  'Magandang gabi':'An evening greeting — gabi means evening or night',
+  'Paalam':'Said when leaving — the Filipino goodbye',
+  'Ingat':'Short for "be careful" — Filipinos say this every time someone leaves',
+  'Hanggang bukas':'Bukas means tomorrow — this is "until tomorrow", like see you then',
+  'Mabuti naman':'Mabuti means good/fine — the reply when someone asks how you are',
+  'Ano ang pangalan mo?':'How you ask someone\'s name — pangalan means name',
+  'Nanay':'The warm, everyday word for mother — similar to "mom" or "mum"',
+  'Tatay':'The everyday word for father — similar to "dad"',
+  'Kapatid':'Covers both brother and sister — context tells you which',
+  'Asawa':'Your husband or wife — gender-neutral, used for either spouse',
+  'Anak':'Used for a son or daughter regardless of age',
+  'Ate':'What you call an older sister or any older woman you\'re close to',
+  'Kuya':'What you call an older brother or any older man you\'re close to',
+  'Bunso':'The youngest child in the family — often the most doted on!',
+  'Lola':'Grandmother — also used affectionately for older women in the community',
+  'Lolo':'Grandfather — also used respectfully for older men',
+  'Tita':'Aunt — also used for close family friends who are older women',
+  'Tito':'Uncle — also used for close family friends who are older men',
+  'Pamangkin':'Your sibling\'s child — covers niece and nephew both',
+  'Pinsan':'Cousin — any cousin, close or distant',
+  'Pamilya':'The whole family unit — a deeply important concept in Filipino culture',
+  'Mag-asawa':'The couple together — husband and wife as a pair',
+  'Masarap':'The go-to compliment for food — Filipinos love being told their cooking is masarap!',
+  'Gutom':'That hungry feeling — you\'ll hear this a lot before mealtimes',
+  'Ubos':'When something is all used up or finished — like when the rice runs out',
+  'Tubig':'Water — essential vocabulary, especially in a warm climate',
+  'Kanin':'Cooked rice — the staple of every Filipino meal, not the grain',
+  'Pagkain':'Food in general — any type of food or meal',
+  'Ulam':'The main dish or viand eaten alongside rice — the non-rice part of the meal',
+  'Busog':'That satisfying full feeling after eating — the opposite of gutom',
+  'Magluto':'To cook — the mag- prefix turns it into an active action',
+  'Kumain':'To eat — one of the most-used verbs in any language!',
+  'Almusal':'The first meal of the day — Filipinos take breakfast seriously',
+  'Tanghalian':'Lunch — the midday meal, from tanghali meaning midday',
+  'Hapunan':'Dinner — the evening meal, often the most social meal of the day',
+  'Matamis':'Sweet in taste — also used poetically to describe a person\'s nature',
+  'Maanghang':'Spicy or hot — the ma- prefix means "having the quality of"',
+  'Lasahin':'To taste or sample something — what you do before deciding if it\'s masarap',
+  'Masaya':'Happy or joyful — one of the most positive and common feeling words',
+  'Malungkot':'Sad or lonely — the opposite of masaya',
+  'Pagod':'Tired or exhausted — very commonly used at the end of a long day',
+  'Galit':'Angry — used to describe someone\'s mood, not a shouted word',
+  'Takot':'Fear or being scared — can describe a feeling or a phobia',
+  'Naiinis':'Mildly irritated or annoyed — a step below angry',
+  'Gulat':'Surprised or startled — the feeling when something catches you off guard',
+  'Nahihiya':'Feeling shy, bashful, or embarrassed — a culturally important emotion in Filipino',
+  'Mahal':'Means both love and expensive — context tells you which. Also used as "dear"',
+  'Mahal kita':'The direct way to say I love you — one of the most important phrases',
+  'Miss kita':'I miss you — borrowed from English "miss" but fully Filipino now',
+  'Sinta':'A poetic, romantic word for beloved or sweetheart — more literary than everyday',
+  'Ligaya':'Joy or happiness — often used in songs and poetry, and as a name',
+  'Puso':'Heart — used literally and metaphorically, like in English',
+  'Selos':'Jealousy — a very human feeling that comes up often!',
+  'Nag-aalala':'Worrying about someone or something — shows you care deeply',
+  'Pumunta':'To go somewhere — a very useful everyday verb',
+  'Matulog':'To sleep — you\'ll want to know this one at the end of a long day',
+  'Makinig':'To listen carefully — the makinig form means actively paying attention',
+  'Magsalita':'To speak or talk — what you\'re learning to do in Tagalog!',
+  'Tumawa':'To laugh — a happy and frequent activity',
+  'Umiyak':'To cry — the um- prefix shows the action is being done by the subject',
+  'Maglaro':'To play — can mean a game, sport, or playful activity',
+  'Mag-aral':'To study — what bebe is doing right now!',
+  'Maglinis':'To clean — the mag- prefix makes it an intentional action',
+  'Magbigay':'To give — used for giving objects, time, love, anything',
+  'Tumulong':'To help someone — a kind and generous verb',
+  'Bumili':'To buy — useful at any market or shop',
+  'Magmaneho':'To drive a vehicle — from the Spanish manejar',
+  'Mag-alaga':'To take care of or look after — used for people, pets and plants',
+  'Umalis':'To leave or go away — the moment of departure',
+  'Bumalik':'To come back or return — the sweet moment of arriving home',
+  'Bahay':'House or home — the place where your family is',
+  'Pintuan':'Door — from pinto, the Spanish-rooted word for door',
+  'Kusina':'Kitchen — where the magic (masarap food) happens',
+  'Kwarto':'Bedroom or room — from the Spanish cuarto',
+  'Bintana':'Window — from the Spanish ventana',
+  'Sala':'Living room or sitting area — the social heart of the home',
+  'Banyo':'Bathroom — from the Spanish baño',
+  'Hagdan':'Stairs or a staircase — be careful going up and down!',
+  'Tindahan':'A shop or store — from tinda meaning goods for sale',
+  'Palengke':'A wet market — the lively local market for fresh food',
+  'Ospital':'Hospital — borrowed directly from Spanish/English',
+  'Simbahan':'Church — from simba meaning to worship',
+  'Parke':'Park or public garden — borrowed from English',
+  'Kalsada':'Street or road — from the Spanish calzada',
+  'Trabaho':'Work or job — borrowed from the Spanish trabajo',
+  'Eskwelahan':'School — from the Spanish escuela with a Filipino suffix',
+};
+
+function getHint(card, toEng){
+  // Primary: use our curated hint lookup
+  if(HINTS[card.tag]) return HINTS[card.tag];
+  // Fallback: strip HTML from the example sentence
+  const ex=card.ex.replace(/<[^>]+>/g,'');
+  return `Example: ${ex}`;
+}
+
+
 const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 const rand=(arr,n)=>shuffle(arr).slice(0,n);
 const $=id=>document.getElementById(id);
@@ -1006,6 +1121,7 @@ function renderMCQuestion(){
   const opts=shuffle([card,...distractors]);
   const letters=['A','B','C','D'];
   const isLQ=session.mode==='learn-quiz';
+  const hintText=getHint(card,toEng);
   $('card-area').innerHTML=`
     <div class="mode-badge ${isLQ?'mb-teal':'mb-gold'}">${isLQ?'🎯 Quiz':'🃏 Flashcard'}</div>
     <div class="question-card pop-in" ${isLQ?'style="border-color:var(--teal-border)"':''}>
@@ -1023,7 +1139,19 @@ function renderMCQuestion(){
         </button>`).join('')}
     </div>
     <div class="feedback-bar" id="feedback-bar"></div>
+    <div class="hint-trigger" id="hint-trigger">
+      <a onclick="revealHint()">💡 Show hint</a>
+    </div>
+    <div class="hint-box" id="hint-box">
+      <div class="hint-box-label">Hint</div>
+      <div class="hint-box-text">${hintText}</div>
+    </div>
     <button class="btn-next" id="btn-next" onclick="nextMC()">Continue</button>`;
+}
+
+function revealHint(){
+  $('hint-trigger').style.display='none';
+  $('hint-box').style.display='block';
 }
 
 function selectMC(btn,selected,correct,eng,toEng){
@@ -1045,6 +1173,9 @@ function selectMC(btn,selected,correct,eng,toEng){
     session.hearts--;session.wrong++;
     renderHearts(3,session.hearts);
     document.querySelector('.question-card').classList.add('shake');
+    // Reveal hint link after wrong answer
+    const ht=$('hint-trigger');
+    if(ht) ht.style.display='block';
     if(session.hearts<=0){setTimeout(()=>endSession(),900);return;}
   }
   $('btn-next').className='btn-next show';
