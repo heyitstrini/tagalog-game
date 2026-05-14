@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tagalog Daily</title>
+
+<!-- PWA Meta -->
+<meta name="application-name" content="Tagalog Daily">
+<meta name="description" content="Learn Tagalog together — daily lessons, streaks & couples mode">
+<meta name="theme-color" content="#0E0E12">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- iOS specific -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tagalog Daily">
+
+<!-- Manifest -->
+<link rel="manifest" id="pwa-manifest">
+
+<!-- iOS icons (generated inline via JS) -->
+<link rel="apple-touch-icon" id="apple-touch-icon">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0E0E12;--surface:#17171D;--surface2:#1F1F28;--surface3:#27272F;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+  --sal:env(safe-area-inset-left,0px);
+  --sar:env(safe-area-inset-right,0px);
+  --gold:#F0C060;--gold-dim:rgba(240,192,96,0.13);--gold-border:rgba(240,192,96,0.28);
+  --green:#4ADE80;--green-dim:rgba(74,222,128,0.12);--green-border:rgba(74,222,128,0.28);
+  --red:#F87171;--red-dim:rgba(248,113,113,0.12);--red-border:rgba(248,113,113,0.28);
+  --blue:#60A5FA;--blue-dim:rgba(96,165,250,0.12);--blue-border:rgba(96,165,250,0.28);
+  --purple:#A78BFA;--purple-dim:rgba(167,139,250,0.12);--purple-border:rgba(167,139,250,0.28);
+  --orange:#FB923C;--orange-dim:rgba(251,146,60,0.12);--orange-border:rgba(251,146,60,0.28);
+  --teal:#2DD4BF;--teal-dim:rgba(45,212,191,0.12);--teal-border:rgba(45,212,191,0.28);
+  --pink:#F472B6;--pink-dim:rgba(244,114,182,0.12);--pink-border:rgba(244,114,182,0.28);
+  --text:#F4F4F5;--muted:#71717A;--muted2:#52525B;
+}
+body{background:var(--bg);color:var(--text);font-family:'Instrument Sans',sans-serif;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;padding-top:var(--sat)}
+body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 70% 40% at 10% 0%,rgba(240,192,96,0.05) 0%,transparent 50%),radial-gradient(ellipse 50% 50% at 90% 100%,rgba(45,212,191,0.04) 0%,transparent 55%);pointer-events:none}
+#app{position:relative;z-index:1;width:100%;max-width:480px;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;padding-bottom:calc(56px + var(--sab))}
+.screen{display:none;flex-direction:column;flex:1}
+.screen.active{display:flex}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:12px;padding:20px 24px 16px}
+.btn-back{width:36px;height:36px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:1rem;transition:all .15s;flex-shrink:0}
+.btn-back:hover{border-color:var(--gold);color:var(--gold)}
+.prog-bar{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--gold),#FBBF24);border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.prog-fill.teal{background:linear-gradient(90deg,var(--teal),#67E8F9)}
+.q-counter{font-family:'Plus Jakarta Sans',sans-serif;font-size:.78rem;font-weight:700;color:var(--muted);flex-shrink:0;min-width:36px;text-align:right}
+
+/* ── HEARTS ── */
+.hearts-row{display:flex;justify-content:center;gap:6px;padding:0 24px 16px}
+.heart{font-size:1.05rem;transition:all .3s}
+.heart.lost{filter:grayscale(1);opacity:.25;transform:scale(.85)}
+
+/* ── SHARED CARD ── */
+.card-area{flex:1;padding:0 24px;display:flex;flex-direction:column}
+.mode-badge{display:inline-flex;align-items:center;gap:6px;border-radius:6px;padding:4px 10px;font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:16px;align-self:flex-start;border:1px solid}
+.mb-gold{background:var(--gold-dim);border-color:var(--gold-border);color:var(--gold)}
+.mb-blue{background:var(--blue-dim);border-color:var(--blue-border);color:var(--blue)}
+.mb-purple{background:var(--purple-dim);border-color:var(--purple-border);color:var(--purple)}
+.mb-orange{background:var(--orange-dim);border-color:var(--orange-border);color:var(--orange)}
+.mb-green{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.mb-teal{background:var(--teal-dim);border-color:var(--teal-border);color:var(--teal)}
+
+.question-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden}
+.question-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),transparent)}
+.question-card.learn-card::before{background:linear-gradient(90deg,var(--teal),transparent)}
+.q-tagalog{font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:800;line-height:1.1;margin-bottom:8px;letter-spacing:-.5px}
+.q-rom{font-size:.8rem;color:var(--muted);font-style:italic;margin-bottom:6px}
+.q-prompt{font-size:.82rem;color:var(--muted2)}
+.q-category{font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2);margin-bottom:12px}
+
+/* ── LEARN CARD ── */
+.learn-word{font-family:'Plus Jakarta Sans',sans-serif;font-size:2.6rem;font-weight:800;color:var(--teal);letter-spacing:-.5px;line-height:1;margin-bottom:10px}
+.learn-rom{font-size:.82rem;color:var(--muted);font-style:italic;margin-bottom:14px}
+.learn-divider{width:32px;height:2px;background:var(--border2);margin:0 auto 14px}
+.learn-english{font-size:1.25rem;font-weight:600;color:var(--text);margin-bottom:8px}
+.learn-cat{display:inline-block;font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);padding:3px 10px;border-radius:20px;margin-bottom:14px}
+.learn-example{font-size:.82rem;color:var(--muted);font-style:italic;line-height:1.5;padding:10px 14px;background:var(--surface2);border-radius:10px;margin-top:4px}
+.learn-example strong{color:var(--teal);font-style:normal}
+
+/* ── LEARN DOTS ── */
+.learn-dots{display:flex;justify-content:center;gap:6px;margin-bottom:16px}
+.learn-dot{width:8px;height:8px;border-radius:50%;background:var(--surface3);transition:all .3s}
+.learn-dot.done{background:var(--teal)}
+.learn-dot.active{background:var(--gold);transform:scale(1.3)}
+
+/* ── MICRO QUIZ ── */
+.micro-prompt{font-size:.85rem;color:var(--muted);text-align:center;margin-bottom:14px;font-style:italic}
+.micro-choices{display:flex;flex-direction:column;gap:8px}
+.micro-btn{width:100%;padding:13px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;text-align:left;font-family:'Instrument Sans',sans-serif;font-size:.88rem;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px}
+.micro-btn:hover:not(:disabled){border-color:rgba(45,212,191,.4);background:var(--teal-dim)}
+.micro-letter{width:26px;height:26px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:.68rem;font-weight:700;color:var(--muted);flex-shrink:0;transition:all .15s}
+.micro-btn.correct{border-color:var(--green);background:var(--green-dim)}
+.micro-btn.correct .micro-letter{background:var(--green);color:#0E0E12;border-color:var(--green)}
+.micro-btn.wrong{border-color:var(--red);background:var(--red-dim)}
+.micro-btn.wrong .micro-letter{background:var(--red);color:#fff;border-color:var(--red)}
+.micro-btn:disabled{cursor:default}
+
+/* ── TRANSITION ── */
+.transition-card{background:var(--surface);border:1px solid var(--teal-border);border-radius:20px;padding:36px 24px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden}
+.transition-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--gold))}
+.tc-icon{font-size:2.8rem;margin-bottom:16px}
+.tc-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:8px}
+.tc-sub{font-size:.85rem;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.tc-words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:24px}
+.tc-word-pill{background:var(--teal-dim);border:1px solid var(--teal-border);border-radius:7px;padding:4px 10px;font-size:.78rem;color:var(--teal);font-weight:500}
+.btn-start-quiz{width:100%;padding:15px;background:var(--gold);color:#0E0E12;border:none;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .15s;margin-bottom:9px}
+.btn-start-quiz:hover{background:#FBBF24}
+.btn-learn-again{width:100%;padding:13px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-learn-again:hover{border-color:var(--teal);color:var(--teal)}
+
+/* ── BROWSE ── */
+.browse-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:16px;transition:border-color .15s}
+.browse-card:hover{border-color:var(--teal-border)}
+.browse-num{font-family:'Plus Jakarta Sans',sans-serif;font-size:.75rem;font-weight:800;color:var(--muted2);width:20px;flex-shrink:0;text-align:center}
+.browse-main{flex:1;min-width:0}
+.browse-tag{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.05rem;font-weight:800;color:var(--teal);margin-bottom:2px}
+.browse-rom{font-size:.72rem;color:var(--muted);font-style:italic;margin-bottom:4px}
+.browse-eng{font-size:.85rem;font-weight:500;color:var(--text);margin-bottom:4px}
+.browse-ex{font-size:.74rem;color:var(--muted);font-style:italic;line-height:1.4}
+.browse-cat-pill{font-size:.62rem;letter-spacing:1.2px;text-transform:uppercase;background:var(--teal-dim);border:1px solid var(--teal-border);color:var(--teal);padding:2px 7px;border-radius:10px;display:inline-block;flex-shrink:0;align-self:flex-start}
+
+/* ── CHOICES ── */
+.choices{display:flex;flex-direction:column;gap:9px}
+.choice-btn{width:100%;padding:15px 18px;background:var(--surface);border:1.5px solid var(--border);border-radius:13px;text-align:left;font-family:'Instrument Sans',sans-serif;font-size:.9rem;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px}
+.choice-btn:hover:not(:disabled){border-color:rgba(240,192,96,.4);background:var(--gold-dim)}
+.choice-letter{width:28px;height:28px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:.7rem;font-weight:700;color:var(--muted);flex-shrink:0;transition:all .15s}
+.choice-btn.correct{border-color:var(--green);background:var(--green-dim)}
+.choice-btn.correct .choice-letter{background:var(--green);color:#0E0E12;border-color:var(--green)}
+.choice-btn.wrong{border-color:var(--red);background:var(--red-dim)}
+.choice-btn.wrong .choice-letter{background:var(--red);color:#fff;border-color:var(--red)}
+.choice-btn:disabled{cursor:default}
+
+/* ── FEEDBACK ── */
+.feedback-bar{margin-top:12px;padding:13px 16px;border-radius:12px;font-size:.85rem;font-weight:500;display:none;align-items:flex-start;gap:10px}
+.feedback-bar.show{display:flex}
+.feedback-bar.correct-fb{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green)}
+.feedback-bar.wrong-fb{background:var(--red-dim);border:1px solid var(--red-border);color:var(--red)}
+.fb-icon{font-size:1.1rem;flex-shrink:0}
+.fb-main{font-weight:600;margin-bottom:2px}
+.fb-sub{font-size:.75rem;opacity:.75}
+.btn-next{margin-top:12px;width:100%;padding:14px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s;display:none}
+.btn-next.show{display:block}
+.btn-next:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── FILL ── */
+.blank-input{width:100%;padding:16px 18px;background:var(--surface);border:1.5px solid var(--border);border-radius:13px;font-family:'Plus Jakarta Sans',sans-serif;font-size:1.1rem;font-weight:700;color:var(--text);text-align:center;letter-spacing:.5px;outline:none;transition:border-color .15s;margin-bottom:9px}
+.blank-input:focus{border-color:var(--blue)}
+.blank-input.correct{border-color:var(--green);background:var(--green-dim)}
+.blank-input.wrong{border-color:var(--red);background:var(--red-dim)}
+.btn-submit{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .15s;margin-bottom:9px}
+.btn-submit:hover{background:#3B82F6}
+.btn-submit:disabled{background:var(--surface2);color:var(--muted);cursor:default}
+
+/* ── MATCH ── */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.match-btn{padding:14px 10px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;font-family:'Instrument Sans',sans-serif;font-size:.82rem;font-weight:500;color:var(--text);cursor:pointer;transition:all .15s;text-align:center;line-height:1.3}
+.match-btn:hover:not(:disabled){border-color:var(--blue);background:var(--blue-dim)}
+.match-btn.selected{border-color:var(--gold);background:var(--gold-dim);color:var(--gold)}
+.match-btn.matched{border-color:var(--green);background:var(--green-dim);color:var(--green);cursor:default}
+.match-btn.wrong-flash{border-color:var(--red);background:var(--red-dim)}
+.match-btn:disabled{cursor:default}
+
+/* ── SPEED ── */
+.speed-timer-wrap{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin:0 24px 20px}
+.speed-timer-fill{height:100%;background:linear-gradient(90deg,var(--green),#FBBF24);border-radius:3px;transition:width .1s linear}
+.speed-timer-fill.danger{background:linear-gradient(90deg,var(--red),var(--orange))}
+.speed-time-label{text-align:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:1.8rem;font-weight:800;color:var(--gold);margin-bottom:4px}
+.speed-time-label.danger{color:var(--red)}
+
+/* ── COUPLES ── */
+.couples-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:32px 24px;margin-bottom:20px;text-align:center;position:relative;overflow:hidden}
+.couples-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),var(--gold))}
+.couple-word-big{font-family:'Plus Jakarta Sans',sans-serif;font-size:2.4rem;font-weight:800;margin-bottom:8px}
+.couple-reveal-btn{padding:12px 28px;background:var(--purple-dim);border:1px solid var(--purple-border);border-radius:10px;color:var(--purple);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .15s;margin-top:8px}
+.couple-reveal-btn:hover{background:var(--purple);color:#fff}
+.verdict-btn{flex:1;padding:13px;border-radius:11px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;border:1.5px solid;transition:all .15s;display:none}
+.verdict-got{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.verdict-got:hover{background:var(--green);color:#0E0E12}
+.verdict-missed{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
+.verdict-missed:hover{background:var(--red);color:#fff}
+
+/* ══════════════════════════
+   HOME
+══════════════════════════ */
+#home{padding:0;gap:0;overflow-y:auto}
+.home-hero{padding:32px 24px 20px;position:relative}
+.home-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.home-greeting .hlabel{font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.home-greeting h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;font-weight:800;line-height:1.2}
+.home-greeting h1 span{color:var(--gold)}
+.streak-badge{display:flex;flex-direction:column;align-items:center;background:var(--gold-dim);border:1px solid var(--gold-border);border-radius:14px;padding:10px 14px;gap:2px;flex-shrink:0}
+.streak-badge .fire{font-size:1.3rem}
+.streak-badge .scount{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.1rem;font-weight:800;color:var(--gold);line-height:1}
+.streak-badge .slbl{font-size:.62rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+
+.xp-section{margin-bottom:16px}
+.xp-row{display:flex;justify-content:space-between;font-size:.74rem;color:var(--muted);margin-bottom:6px}
+.xp-row strong{color:var(--gold);font-weight:600}
+.xp-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.xp-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),#FBBF24);transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+
+.stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0}
+.stat-chip{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
+.stat-chip .sv{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.2rem;font-weight:800;line-height:1;margin-bottom:3px}
+.stat-chip .sl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.v-gold{color:var(--gold)}.v-green{color:var(--green)}.v-blue{color:var(--blue)}.v-red{color:var(--red)}.v-teal{color:var(--teal)}
+
+/* ── LESSON MAP ── */
+.map-section{padding:24px 24px 0}
+.map-unit{margin-bottom:28px}
+.unit-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:0 2px}
+.unit-icon-wrap{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.unit-meta{flex:1}
+.unit-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;font-weight:800;margin-bottom:2px}
+.unit-sub{font-size:.74rem;color:var(--muted)}
+.unit-prog{font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;font-weight:700;color:var(--muted2)}
+
+.lessons-list{display:flex;flex-direction:column;gap:9px}
+.lesson-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.lesson-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.lesson-row:hover:not(.locked){transform:translateX(3px)}
+.lesson-row.locked{opacity:.5;cursor:default}
+.lesson-row.completed::before{background:var(--green)}
+.lesson-row.unlocked::before{background:var(--gold)}
+.lesson-row.locked::before{background:var(--muted2)}
+.lesson-num-badge{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',sans-serif;font-size:.78rem;font-weight:800;flex-shrink:0}
+.badge-completed{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border)}
+.badge-unlocked{background:var(--gold-dim);color:var(--gold);border:1px solid var(--gold-border)}
+.badge-locked{background:var(--surface2);color:var(--muted2);border:1px solid var(--border)}
+.lesson-info{flex:1;min-width:0}
+.lesson-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:.9rem;font-weight:700;margin-bottom:2px}
+.lesson-desc{font-size:.74rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lesson-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.lesson-stars{font-size:.85rem;letter-spacing:1px}
+.lesson-xp{font-size:.65rem;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-weight:600}
+.lock-icon{font-size:1rem;color:var(--muted2)}
+
+/* practice modes section */
+.practice-section{padding:0 24px;margin-bottom:8px}
+.section-label{font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.practice-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.practice-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.practice-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.pc-mc::before{background:var(--gold)}
+.pc-fill::before{background:var(--blue)}
+.pc-match::before{background:var(--purple)}
+.pc-speed::before{background:var(--orange)}
+.pc-couples::before{background:var(--pink)}
+.practice-card:hover{transform:translateY(-2px);border-color:var(--border2)}
+.pc-icon{font-size:1.4rem;margin-bottom:8px}
+.pc-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;font-weight:700;margin-bottom:2px}
+.pc-desc{font-size:.68rem;color:var(--muted);line-height:1.3}
+.pc-xp{font-size:.62rem;font-weight:700;margin-top:6px;padding:2px 7px;border-radius:5px;display:inline-block}
+.xp-gold{background:var(--gold-dim);color:var(--gold)}
+.xp-blue{background:var(--blue-dim);color:var(--blue)}
+.xp-purple{background:var(--purple-dim);color:var(--purple)}
+.xp-orange{background:var(--orange-dim);color:var(--orange)}
+.xp-pink{background:var(--pink-dim);color:var(--pink)}
+
+/* learned words */
+.learned-section{padding:0 24px 8px}
+.word-pills{display:flex;flex-wrap:wrap;gap:7px}
+.word-pill{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 10px;font-size:.76rem}
+.word-pill .tw{color:var(--text);font-weight:500}
+.word-pill .te{color:var(--muted);font-size:.68rem;margin-left:5px}
+
+/* ══════════════════════════
+   RESULT
+══════════════════════════ */
+#result{padding:44px 24px 28px;align-items:center;text-align:center}
+.result-ring{width:116px;height:116px;border-radius:50%;position:relative;margin:0 auto 24px;display:flex;align-items:center;justify-content:center}
+.result-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--surface2);stroke-width:8}
+.ring-fill{fill:none;stroke:var(--gold);stroke-width:8;stroke-linecap:round;stroke-dasharray:339;stroke-dashoffset:339;transition:stroke-dashoffset 1.4s cubic-bezier(.4,0,.2,1) .3s}
+.ring-fill.rgreen{stroke:var(--green)}
+.ring-fill.rteal{stroke:var(--teal)}
+.result-emoji{font-size:2rem;position:relative;z-index:1}
+.result-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.75rem;font-weight:800;margin-bottom:8px}
+.result-sub{font-size:.88rem;color:var(--muted);margin-bottom:28px;max-width:280px}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;width:100%;margin-bottom:24px}
+.rs-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:14px 8px}
+.rs-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.45rem;font-weight:800;margin-bottom:4px}
+.rs-lbl{font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.xp-earned-bar{background:var(--gold-dim);border:1px solid var(--gold-border);border-radius:12px;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:20px}
+.xe-label{font-size:.82rem;color:var(--muted)}
+.xe-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.05rem;font-weight:800;color:var(--gold)}
+.btn-primary{width:100%;padding:14px;background:var(--gold);color:#0E0E12;border:none;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .15s;margin-bottom:9px}
+.btn-primary:hover{background:#FBBF24}
+.btn-secondary{width:100%;padding:13px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-secondary:hover{border-color:var(--muted);color:var(--text)}
+
+/* ── ANIMATIONS ── */
+@keyframes popIn{0%{opacity:0;transform:scale(.9) translateY(8px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(.5)}60%{transform:scale(1.15)}100%{opacity:1;transform:scale(1)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.pop-in{animation:popIn .32s cubic-bezier(.34,1.3,.64,1) both}
+.shake{animation:shake .38s ease}
+.slide-in{animation:slideIn .35s cubic-bezier(.34,1.1,.64,1) both}
+
+.xp-toast{position:fixed;top:20px;right:20px;z-index:999;background:var(--gold);color:#0E0E12;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:.82rem;padding:7px 14px;border-radius:9px;opacity:0;transform:translateY(-10px);transition:all .3s cubic-bezier(.34,1.3,.64,1);pointer-events:none}
+.xp-toast.show{opacity:1;transform:translateY(0)}
+.levelup-overlay{position:fixed;inset:0;z-index:998;background:rgba(14,14,18,.88);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.levelup-overlay.show{opacity:1;pointer-events:all}
+.levelup-box{background:var(--surface);border:1px solid var(--gold-border);border-radius:24px;padding:40px 32px;text-align:center;max-width:320px;width:90%}
+.levelup-box .star{font-size:3rem;display:block;margin-bottom:12px;animation:bounceIn .6s ease both .2s}
+.levelup-box h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.6rem;font-weight:800;color:var(--gold);margin-bottom:6px}
+.levelup-box p{font-size:.86rem;color:var(--muted);margin-bottom:24px}
+.levelup-box button{padding:12px 32px;background:var(--gold);color:#0E0E12;border:none;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer}
+
+/* unlock toast */
+.unlock-toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);z-index:999;background:var(--surface);border:1px solid var(--green-border);color:var(--green);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.85rem;padding:10px 20px;border-radius:12px;opacity:0;transition:all .4s cubic-bezier(.34,1.3,.64,1);pointer-events:none;white-space:nowrap}
+.unlock-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── PWA INSTALL BANNER (Android/Desktop) ── */
+.install-banner{position:fixed;bottom:calc(20px + var(--sab));left:50%;transform:translateX(-50%) translateY(120px);z-index:1000;background:var(--surface);border:1px solid var(--gold-border);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;max-width:400px;width:calc(100% - 40px);box-shadow:0 8px 40px rgba(0,0,0,0.6);transition:transform .45s cubic-bezier(.34,1.2,.64,1),opacity .45s ease;opacity:0;pointer-events:none}
+.install-banner.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all}
+.install-banner-icon{font-size:2.2rem;flex-shrink:0}
+.install-banner-text{flex:1;min-width:0}
+.install-banner-text strong{font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;font-weight:700;display:block;margin-bottom:2px}
+.install-banner-text span{font-size:.72rem;color:var(--muted)}
+.install-banner-btns{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.btn-install{padding:8px 16px;background:var(--gold);color:#0E0E12;border:none;border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.78rem;font-weight:800;cursor:pointer;white-space:nowrap}
+.btn-install-dismiss{padding:6px 16px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.72rem;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* ── IOS INSTALL GUIDE ── */
+.ios-tip{position:fixed;bottom:calc(20px + var(--sab));left:50%;transform:translateX(-50%) translateY(120px);z-index:1000;background:var(--surface);border:1px solid var(--teal-border);border-radius:18px;padding:20px;max-width:360px;width:calc(100% - 40px);text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.6);transition:transform .45s cubic-bezier(.34,1.2,.64,1),opacity .45s ease;opacity:0;pointer-events:none}
+.ios-tip.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all}
+.ios-tip h4{font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;font-weight:800;color:var(--teal);margin-bottom:8px}
+.ios-tip p{font-size:.78rem;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.ios-tip .step{display:inline-flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:.78rem;margin:0 2px}
+.ios-tip button{padding:9px 24px;background:var(--teal-dim);color:var(--teal);border:1px solid var(--teal-border);border-radius:9px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ░░ HOME ░░ -->
+<div class="screen active" id="home">
+  <div class="home-hero">
+    <div class="home-top">
+      <div class="home-greeting">
+        <div class="hlabel">Magandang araw!</div>
+        <h1>Kumusta,<br><span>Bebe?</span> 🌺</h1>
+      </div>
+      <div class="streak-badge">
+        <div class="fire">🔥</div>
+        <div class="scount" id="streak-display">0</div>
+        <div class="slbl">streak</div>
+      </div>
+    </div>
+    <div class="xp-section">
+      <div class="xp-row"><span>Level <strong id="level-display">1</strong></span><span><strong id="xp-display">0</strong> / <strong id="xp-next-display">200</strong> XP</span></div>
+      <div class="xp-track"><div class="xp-fill" id="xp-bar" style="width:0%"></div></div>
+    </div>
+    <div class="stats-strip">
+      <div class="stat-chip"><div class="sv v-gold" id="stat-words">0</div><div class="sl">Words</div></div>
+      <div class="stat-chip"><div class="sv v-green" id="stat-lessons">0</div><div class="sl">Lessons</div></div>
+      <div class="stat-chip"><div class="sv v-teal" id="stat-sessions">0</div><div class="sl">Sessions</div></div>
+    </div>
+  </div>
+
+  <!-- LESSON MAP -->
+  <div class="map-section" id="lesson-map"></div>
+
+  <!-- PRACTICE MODES -->
+  <div class="practice-section" style="margin-top:8px">
+    <div class="section-label">Free Practice</div>
+    <div class="practice-grid">
+      <div class="practice-card pc-mc" onclick="startMode('mc')">
+        <div class="pc-icon">🃏</div>
+        <div class="pc-name">Flashcards</div>
+        <div class="pc-desc">Tagalog ↔ English, 3 lives</div>
+        <div class="pc-xp xp-gold">+50 XP</div>
+      </div>
+      <div class="practice-card pc-fill" onclick="startMode('fill')">
+        <div class="pc-icon">✍️</div>
+        <div class="pc-name">Fill Blank</div>
+        <div class="pc-desc">Type the missing word</div>
+        <div class="pc-xp xp-blue">+60 XP</div>
+      </div>
+      <div class="practice-card pc-match" onclick="startMode('match')">
+        <div class="pc-icon">🔗</div>
+        <div class="pc-name">Word Match</div>
+        <div class="pc-desc">Pair up 6 matches</div>
+        <div class="pc-xp xp-purple">+40 XP</div>
+      </div>
+      <div class="practice-card pc-speed" onclick="startMode('speed')">
+        <div class="pc-icon">⚡</div>
+        <div class="pc-name">Speed Round</div>
+        <div class="pc-desc">8 seconds — bonus XP</div>
+        <div class="pc-xp xp-orange">+80 XP</div>
+      </div>
+      <div class="practice-card pc-couples" onclick="startMode('couples')" style="grid-column:span 2">
+        <div class="pc-icon">💑</div>
+        <div class="pc-name">Couples Mode</div>
+        <div class="pc-desc">You quiz him — reveal & score</div>
+        <div class="pc-xp xp-pink">+70 XP</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="learned-section" style="margin-top:20px">
+    <div class="section-label">Words Unlocked</div>
+    <div class="word-pills" id="learned-pills"><div style="font-size:.78rem;color:var(--muted)">Complete a lesson to unlock words.</div></div>
+  </div>
+  <div style="height:24px"></div>
+</div>
+
+<!-- ░░ LEARN (scroll all words, quiz button at bottom) ░░ -->
+<div class="screen" id="learn">
+  <div class="topbar">
+    <div class="btn-back" onclick="goHome()">←</div>
+    <div style="flex:1;padding:0 4px">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;font-weight:700;color:var(--teal)" id="learn-title">Lesson</div>
+      <div style="font-size:.72rem;color:var(--muted)">Scroll through all the words</div>
+    </div>
+    <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:.78rem;font-weight:700;color:var(--muted)" id="learn-counter">8 words</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:0 24px 24px" id="learn-scroll">
+    <!-- word cards injected here -->
+    <div id="learn-words-list"></div>
+    <!-- quiz CTA at bottom -->
+    <div id="learn-quiz-cta" style="margin-top:8px;display:none">
+      <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+      <div style="background:var(--surface);border:1px solid var(--teal-border);border-radius:20px;padding:28px 22px;text-align:center;position:relative;overflow:hidden">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--gold))"></div>
+        <div style="font-size:2rem;margin-bottom:12px">🎯</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:8px">Ready to be tested?</div>
+        <div style="font-size:.82rem;color:var(--muted);margin-bottom:20px;line-height:1.5">You've seen all <span id="cta-word-count">8</span> words. Quiz time — trust your memory!</div>
+        <button onclick="startQuizPhase()" style="width:100%;padding:15px;background:var(--gold);color:#0E0E12;border:none;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;margin-bottom:10px">Start Quiz →</button>
+        <button onclick="scrollToTop()" style="width:100%;padding:13px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer">↑ Review Again</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ░░ TRANSITION ░░ -->
+<div class="screen" id="transition">
+  <div class="card-area" style="padding:40px 24px;justify-content:center">
+    <div class="transition-card pop-in">
+      <div class="tc-icon">🎯</div>
+      <div class="tc-title">Now let's test you!</div>
+      <div class="tc-sub">You just studied these words. Time to see how many stuck — trust your memory!</div>
+      <div class="tc-words" id="tc-words"></div>
+      <button class="btn-start-quiz" onclick="startQuizPhase()">Start Quiz →</button>
+      <button class="btn-learn-again" onclick="restartLearn()">← Review Words Again</button>
+    </div>
+  </div>
+</div>
+
+<!-- ░░ GAME ░░ -->
+<div class="screen" id="game">
+  <div class="topbar">
+    <div class="btn-back" onclick="goHome()">←</div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="q-counter" id="q-counter">1/10</div>
+  </div>
+  <div class="hearts-row" id="hearts-row"></div>
+  <div id="speed-timer-section" style="display:none">
+    <div class="speed-time-label" id="speed-time-label">8</div>
+    <div class="speed-timer-wrap"><div class="speed-timer-fill" id="speed-timer-fill" style="width:100%"></div></div>
+  </div>
+  <div class="card-area" id="card-area"></div>
+</div>
+
+<!-- ░░ RESULT ░░ -->
+<div class="screen" id="result">
+  <div class="result-ring">
+    <svg viewBox="0 0 120 120">
+      <circle class="ring-bg" cx="60" cy="60" r="54"/>
+      <circle class="ring-fill" id="result-ring" cx="60" cy="60" r="54"/>
+    </svg>
+    <div class="result-emoji" id="result-emoji">🏆</div>
+  </div>
+  <div class="result-title" id="result-title">Magaling!</div>
+  <div class="result-sub" id="result-sub">Excellent work today.</div>
+  <div class="result-stats">
+    <div class="rs-card"><div class="rs-val v-green" id="res-correct">0</div><div class="rs-lbl">Correct</div></div>
+    <div class="rs-card"><div class="rs-val v-red" id="res-wrong">0</div><div class="rs-lbl">Missed</div></div>
+    <div class="rs-card"><div class="rs-val v-gold" id="res-acc">0%</div><div class="rs-lbl">Accuracy</div></div>
+  </div>
+  <div class="xp-earned-bar"><div class="xe-label">XP Earned</div><div class="xe-val" id="xp-earned-val">+0 XP</div></div>
+  <button class="btn-primary" onclick="goHome()">Back to Home</button>
+  <button class="btn-secondary" onclick="playAgain()">Play Again</button>
+</div>
+
+</div><!-- /app -->
+
+<div class="xp-toast" id="xp-toast">+10 XP</div>
+<div class="unlock-toast" id="unlock-toast">🔓 New lesson unlocked!</div>
+
+<!-- Android/Desktop install banner -->
+<div class="install-banner" id="install-banner">
+  <div class="install-banner-icon">🌺</div>
+  <div class="install-banner-text">
+    <strong>Add to Home Screen</strong>
+    <span>Install Tagalog Daily as an app</span>
+  </div>
+  <div class="install-banner-btns">
+    <button class="btn-install" onclick="triggerInstall()">Install</button>
+    <button class="btn-install-dismiss" onclick="dismissInstall()">Not now</button>
+  </div>
+</div>
+
+<!-- iOS install guide -->
+<div class="ios-tip" id="ios-tip">
+  <h4>📲 Add to Home Screen</h4>
+  <p>
+    Tap <span class="step">⎙ Share</span> at the bottom of Safari,<br>
+    then tap <span class="step">＋ Add to Home Screen</span>.<br>
+    Tagalog Daily will appear as an app icon!
+  </p>
+  <button onclick="dismissIosTip()">Got it!</button>
+</div>
+
+<div class="levelup-overlay" id="levelup-overlay">
+  <div class="levelup-box">
+    <span class="star">⭐</span>
+    <h2>Level Up!</h2>
+    <p id="levelup-msg">You reached Level 2!</p>
+    <button onclick="closeLevelUp()">Awesome!</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// LESSON DATA — themed, sequential
+// ═══════════════════════════════════════
+const UNITS = [
+  {
+    id:'greetings', title:'Greetings', icon:'👋', color:'var(--gold)',
+    sub:'Say hello, goodbye & thank you',
+    lessons:[
+      {
+        id:'greet-1', name:'Basic Greetings', desc:'Kumusta, Salamat & more',
+        words:[
+          {tag:'Kumusta?',rom:'ku-MUS-ta',eng:'How are you?',cat:'Greetings',ex:'<strong>Kumusta</strong> ka ngayon? — How are you today?'},
+          {tag:'Salamat',rom:'sa-LA-mat',eng:'Thank you',cat:'Greetings',ex:'<strong>Salamat</strong> po sa tulong mo. — Thank you for your help.'},
+          {tag:'Walang anuman',rom:'wa-LANG a-NU-man',eng:"You're welcome",cat:'Greetings',ex:'<strong>Walang anuman</strong>! — You\'re welcome!'},
+          {tag:'Paumanhin',rom:'pa-u-MAN-hin',eng:'Excuse me / Sorry',cat:'Greetings',ex:'<strong>Paumanhin</strong> po. — Excuse me.'},
+          {tag:'Oo',rom:'O-o',eng:'Yes',cat:'Greetings',ex:'<strong>Oo</strong>, gusto ko! — Yes, I want some!'},
+          {tag:'Hindi',rom:'HIN-di',eng:'No',cat:'Greetings',ex:'<strong>Hindi</strong>, salamat. — No, thank you.'},
+          {tag:'Po',rom:'po',eng:'Respectful particle',cat:'Greetings',ex:'Salamat <strong>po</strong>. — Thank you (respectfully).'},
+          {tag:'Opo',rom:'O-po',eng:'Yes (respectful)',cat:'Greetings',ex:'<strong>Opo</strong>! — Yes (respectful).'},
+        ]
+      },
+      {
+        id:'greet-2', name:'Hellos & Goodbyes', desc:'Time-based greetings & farewells',
+        words:[
+          {tag:'Magandang umaga',rom:'ma-GAN-dang u-MA-ga',eng:'Good morning',cat:'Greetings',ex:'<strong>Magandang umaga</strong>! — Good morning!'},
+          {tag:'Magandang hapon',rom:'ma-GAN-dang HA-pon',eng:'Good afternoon',cat:'Greetings',ex:'<strong>Magandang hapon</strong> po. — Good afternoon.'},
+          {tag:'Magandang gabi',rom:'ma-GAN-dang GA-bi',eng:'Good evening',cat:'Greetings',ex:'<strong>Magandang gabi</strong>! — Good evening!'},
+          {tag:'Paalam',rom:'pa-A-lam',eng:'Goodbye',cat:'Greetings',ex:'<strong>Paalam</strong> na! Ingat ka. — Goodbye! Take care.'},
+          {tag:'Ingat',rom:'I-ngat',eng:'Take care',cat:'Greetings',ex:'<strong>Ingat</strong> ka palagi. — Always take care.'},
+          {tag:'Hanggang bukas',rom:'hang-GANG BU-kas',eng:'See you tomorrow',cat:'Greetings',ex:'<strong>Hanggang bukas</strong>! — See you tomorrow!'},
+          {tag:'Mabuti naman',rom:'ma-BU-ti NA-man',eng:"I'm fine / Good",cat:'Greetings',ex:'<strong>Mabuti naman</strong>, ikaw? — I\'m fine, and you?'},
+          {tag:'Ano ang pangalan mo?',rom:'A-no ang pa-NGA-lan mo',eng:"What's your name?",cat:'Greetings',ex:'<strong>Ano ang pangalan mo?</strong> — What\'s your name?'},
+        ]
+      },
+    ]
+  },
+  {
+    id:'family', title:'Family', icon:'👨‍👩‍👧', color:'var(--pink)',
+    sub:'Talk about the people you love',
+    lessons:[
+      {
+        id:'fam-1', name:'Immediate Family', desc:'Parents, siblings & spouse',
+        words:[
+          {tag:'Nanay',rom:'NA-nay',eng:'Mother',cat:'Family',ex:'Ang <strong>nanay</strong> ko ay mabait. — My mother is kind.'},
+          {tag:'Tatay',rom:'TA-tay',eng:'Father',cat:'Family',ex:'Malakas ang <strong>tatay</strong> ko. — My father is strong.'},
+          {tag:'Kapatid',rom:'ka-PA-tid',eng:'Sibling',cat:'Family',ex:'Mayroon akong dalawang <strong>kapatid</strong>. — I have two siblings.'},
+          {tag:'Asawa',rom:'a-SA-wa',eng:'Spouse',cat:'Family',ex:'Ikaw ang aking <strong>asawa</strong>. — You are my spouse.'},
+          {tag:'Anak',rom:'A-nak',eng:'Child',cat:'Family',ex:'Ang <strong>anak</strong> niya ay masaya. — Her child is happy.'},
+          {tag:'Ate',rom:'A-te',eng:'Older sister',cat:'Family',ex:'Maganda ang <strong>ate</strong> ko. — My older sister is beautiful.'},
+          {tag:'Kuya',rom:'KU-ya',eng:'Older brother',cat:'Family',ex:'Mataas ang <strong>kuya</strong> ko. — My older brother is tall.'},
+          {tag:'Bunso',rom:'BUN-so',eng:'Youngest child',cat:'Family',ex:'Siya ang <strong>bunso</strong> sa pamilya. — She is the youngest in the family.'},
+        ]
+      },
+      {
+        id:'fam-2', name:'Extended Family', desc:'Grandparents, relatives & more',
+        words:[
+          {tag:'Lola',rom:'LO-la',eng:'Grandmother',cat:'Family',ex:'Mahal ko ang aking <strong>lola</strong>. — I love my grandmother.'},
+          {tag:'Lolo',rom:'LO-lo',eng:'Grandfather',cat:'Family',ex:'Matanda na ang <strong>lolo</strong> ko. — My grandfather is old.'},
+          {tag:'Tita',rom:'TI-ta',eng:'Aunt',cat:'Family',ex:'Masarap magluto ang <strong>tita</strong> ko. — My aunt cooks deliciously.'},
+          {tag:'Tito',rom:'TI-to',eng:'Uncle',cat:'Family',ex:'Mabait ang <strong>tito</strong> ko. — My uncle is kind.'},
+          {tag:'Pamangkin',rom:'pa-MANG-kin',eng:'Niece or nephew',cat:'Family',ex:'Cute ang <strong>pamangkin</strong> ko. — My niece/nephew is cute.'},
+          {tag:'Pinsan',rom:'PIN-san',eng:'Cousin',cat:'Family',ex:'Malapit kami ng <strong>pinsan</strong> ko. — My cousin and I are close.'},
+          {tag:'Pamilya',rom:'pa-MIL-ya',eng:'Family',cat:'Family',ex:'Mahal ko ang aking <strong>pamilya</strong>. — I love my family.'},
+          {tag:'Mag-asawa',rom:'mag-a-SA-wa',eng:'Husband and wife / Couple',cat:'Family',ex:'Masaya silang <strong>mag-asawa</strong>. — They are a happy couple.'},
+        ]
+      },
+    ]
+  },
+  {
+    id:'food', title:'Food & Eating', icon:'🍚', color:'var(--orange)',
+    sub:'Eat, cook and enjoy Filipino food',
+    lessons:[
+      {
+        id:'food-1', name:'At the Table', desc:'Food, hunger & taste',
+        words:[
+          {tag:'Masarap',rom:'ma-SA-rap',eng:'Delicious',cat:'Food',ex:'<strong>Masarap</strong> ang adobo mo! — Your adobo is delicious!'},
+          {tag:'Gutom',rom:'GU-tom',eng:'Hungry',cat:'Food',ex:'<strong>Gutom</strong> na ako. — I\'m already hungry.'},
+          {tag:'Ubos',rom:'U-bos',eng:'All gone / Finished',cat:'Food',ex:'<strong>Ubos</strong> na ang kanin. — The rice is all gone.'},
+          {tag:'Tubig',rom:'TU-big',eng:'Water',cat:'Food',ex:'Pwede bang humingi ng <strong>tubig</strong>? — Can I ask for water?'},
+          {tag:'Kanin',rom:'KA-nin',eng:'Rice',cat:'Food',ex:'Gusto ko ng maraming <strong>kanin</strong>. — I want a lot of rice.'},
+          {tag:'Pagkain',rom:'pag-KA-in',eng:'Food',cat:'Food',ex:'Ang <strong>pagkain</strong> ay mainit. — The food is hot.'},
+          {tag:'Ulam',rom:'U-lam',eng:'Side dish / Viand',cat:'Food',ex:'Anong <strong>ulam</strong> natin? — What\'s our side dish?'},
+          {tag:'Busog',rom:'BU-sog',eng:'Full (after eating)',cat:'Food',ex:'<strong>Busog</strong> na ako, salamat. — I\'m full, thank you.'},
+        ]
+      },
+      {
+        id:'food-2', name:'In the Kitchen', desc:'Cooking, ingredients & meals',
+        words:[
+          {tag:'Magluto',rom:'mag-LU-to',eng:'To cook',cat:'Food',ex:'<strong>Magluto</strong> tayo ng adobo. — Let\'s cook adobo.'},
+          {tag:'Kumain',rom:'ku-MA-in',eng:'To eat',cat:'Food',ex:'<strong>Kumain</strong> na tayo! — Let\'s eat now!'},
+          {tag:'Almusal',rom:'al-MU-sal',eng:'Breakfast',cat:'Food',ex:'Anong gusto mo sa <strong>almusal</strong>? — What do you want for breakfast?'},
+          {tag:'Tanghalian',rom:'tang-ha-LI-an',eng:'Lunch',cat:'Food',ex:'Oras na ng <strong>tanghalian</strong>. — It\'s lunchtime.'},
+          {tag:'Hapunan',rom:'ha-PU-nan',eng:'Dinner',cat:'Food',ex:'Naghanda na ako ng <strong>hapunan</strong>. — I already prepared dinner.'},
+          {tag:'Matamis',rom:'ma-TA-mis',eng:'Sweet',cat:'Food',ex:'<strong>Matamis</strong> ang halo-halo. — Halo-halo is sweet.'},
+          {tag:'Maanghang',rom:'ma-ANG-hang',eng:'Spicy',cat:'Food',ex:'<strong>Maanghang</strong> ba ito? — Is this spicy?'},
+          {tag:'Lasahin',rom:'la-SA-hin',eng:'To taste',cat:'Food',ex:'<strong>Lasahin</strong> mo ito. — Taste this.'},
+        ]
+      },
+    ]
+  },
+  {
+    id:'emotions', title:'Feelings', icon:'💛', color:'var(--purple)',
+    sub:'Express how you feel every day',
+    lessons:[
+      {
+        id:'feel-1', name:'Core Emotions', desc:'Happy, sad, tired & more',
+        words:[
+          {tag:'Masaya',rom:'ma-SA-ya',eng:'Happy',cat:'Emotions',ex:'<strong>Masaya</strong> ako kapag nandito ka. — I\'m happy when you\'re here.'},
+          {tag:'Malungkot',rom:'ma-lung-KOT',eng:'Sad',cat:'Emotions',ex:'Bakit ka <strong>malungkot</strong>? — Why are you sad?'},
+          {tag:'Pagod',rom:'PA-god',eng:'Tired',cat:'Emotions',ex:'<strong>Pagod</strong> na ako ngayon. — I\'m tired now.'},
+          {tag:'Galit',rom:'GA-lit',eng:'Angry',cat:'Emotions',ex:'Huwag kang <strong>galit</strong> sa akin. — Don\'t be angry at me.'},
+          {tag:'Takot',rom:'TA-kot',eng:'Scared / Fear',cat:'Emotions',ex:'<strong>Takot</strong> ako sa dilim. — I\'m scared of the dark.'},
+          {tag:'Naiinis',rom:'na-i-I-nis',eng:'Annoyed',cat:'Emotions',ex:'<strong>Naiinis</strong> ako. — I\'m annoyed.'},
+          {tag:'Gulat',rom:'GU-lat',eng:'Surprised',cat:'Emotions',ex:'<strong>Gulat</strong> ako sa balita. — I\'m surprised by the news.'},
+          {tag:'Nahihiya',rom:'na-hi-HI-ya',eng:'Shy / Embarrassed',cat:'Emotions',ex:'<strong>Nahihiya</strong> ako. — I\'m shy/embarrassed.'},
+        ]
+      },
+      {
+        id:'feel-2', name:'Love & Affection', desc:'Say it in Tagalog',
+        words:[
+          {tag:'Mahal',rom:'ma-HAL',eng:'Love / Dear',cat:'Emotions',ex:'<strong>Mahal</strong> kita nang sobra. — I love you so much.'},
+          {tag:'Mahal kita',rom:'ma-HAL KI-ta',eng:'I love you',cat:'Emotions',ex:'<strong>Mahal kita</strong>, bebe. — I love you, bebe.'},
+          {tag:'Miss kita',rom:'miss KI-ta',eng:'I miss you',cat:'Emotions',ex:'<strong>Miss kita</strong> nang husto. — I miss you so much.'},
+          {tag:'Sinta',rom:'SIN-ta',eng:'Beloved / Darling',cat:'Emotions',ex:'Ikaw ang aking <strong>sinta</strong>. — You are my beloved.'},
+          {tag:'Ligaya',rom:'li-GA-ya',eng:'Joy / Happiness',cat:'Emotions',ex:'Ikaw ang aking <strong>ligaya</strong>. — You are my joy.'},
+          {tag:'Puso',rom:'PU-so',eng:'Heart',cat:'Emotions',ex:'Nandito ka sa aking <strong>puso</strong>. — You are in my heart.'},
+          {tag:'Selos',rom:'SE-los',eng:'Jealous',cat:'Emotions',ex:'Nag-<strong>selos</strong> ako. — I got jealous.'},
+          {tag:'Nag-aalala',rom:'nag-a-a-LA-la',eng:'Worried',cat:'Emotions',ex:'<strong>Nag-aalala</strong> ako sa iyo. — I\'m worried about you.'},
+        ]
+      },
+    ]
+  },
+  {
+    id:'verbs', title:'Action Verbs', icon:'⚡', color:'var(--blue)',
+    sub:'What you do every day',
+    lessons:[
+      {
+        id:'verb-1', name:'Daily Actions', desc:'Go, sleep, listen & more',
+        words:[
+          {tag:'Pumunta',rom:'pu-MUN-ta',eng:'To go',cat:'Verbs',ex:'<strong>Pumunta</strong> kami sa palengke. — We went to the market.'},
+          {tag:'Matulog',rom:'ma-TU-log',eng:'To sleep',cat:'Verbs',ex:'Gusto kong <strong>matulog</strong>. — I want to sleep.'},
+          {tag:'Makinig',rom:'ma-KI-nig',eng:'To listen',cat:'Verbs',ex:'<strong>Makinig</strong> ka nang mabuti. — Listen carefully.'},
+          {tag:'Magsalita',rom:'mag-sa-LI-ta',eng:'To speak / Talk',cat:'Verbs',ex:'<strong>Magsalita</strong> ka ng Tagalog. — Speak Tagalog.'},
+          {tag:'Tumawa',rom:'tu-MA-wa',eng:'To laugh',cat:'Verbs',ex:'<strong>Tumawa</strong> siya nang malakas. — He/she laughed loudly.'},
+          {tag:'Umiyak',rom:'u-MI-yak',eng:'To cry',cat:'Verbs',ex:'Huwag kang <strong>umiyak</strong>. — Don\'t cry.'},
+          {tag:'Maglaro',rom:'mag-LA-ro',eng:'To play',cat:'Verbs',ex:'Gusto ko <strong>maglaro</strong>. — I want to play.'},
+          {tag:'Mag-aral',rom:'mag-A-ral',eng:'To study',cat:'Verbs',ex:'<strong>Mag-aral</strong> ka ng Tagalog araw-araw. — Study Tagalog every day.'},
+        ]
+      },
+      {
+        id:'verb-2', name:'Home & Care', desc:'Cook, clean, give & help',
+        words:[
+          {tag:'Maglinis',rom:'mag-LI-nis',eng:'To clean',cat:'Verbs',ex:'<strong>Maglinis</strong> tayo ng bahay. — Let\'s clean the house.'},
+          {tag:'Magbigay',rom:'mag-BI-gay',eng:'To give',cat:'Verbs',ex:'<strong>Magbigay</strong> ka ng pagmamahal. — Give love.'},
+          {tag:'Tumulong',rom:'tu-MU-long',eng:'To help',cat:'Verbs',ex:'<strong>Tumulong</strong> ka sa akin. — Help me.'},
+          {tag:'Bumili',rom:'bu-MI-li',eng:'To buy',cat:'Verbs',ex:'<strong>Bumili</strong> kami ng prutas. — We bought fruits.'},
+          {tag:'Magmaneho',rom:'mag-ma-NE-ho',eng:'To drive',cat:'Verbs',ex:'<strong>Magmaneho</strong> nang maingat. — Drive carefully.'},
+          {tag:'Mag-alaga',rom:'mag-a-LA-ga',eng:'To take care of',cat:'Verbs',ex:'<strong>Mag-alaga</strong> ka ng sarili mo. — Take care of yourself.'},
+          {tag:'Umalis',rom:'u-MA-lis',eng:'To leave',cat:'Verbs',ex:'Kailan ka <strong>aalis</strong>? — When will you leave?'},
+          {tag:'Bumalik',rom:'bu-MA-lik',eng:'To return / Come back',cat:'Verbs',ex:'<strong>Bumalik</strong> ka agad. — Come back soon.'},
+        ]
+      },
+    ]
+  },
+  {
+    id:'home', title:'Home & Places', icon:'🏠', color:'var(--teal)',
+    sub:'Rooms, objects and where you are',
+    lessons:[
+      {
+        id:'home-1', name:'Around the House', desc:'Rooms & furniture',
+        words:[
+          {tag:'Bahay',rom:'BA-hay',eng:'Home / House',cat:'Home',ex:'Ang <strong>bahay</strong> namin ay malaki. — Our home is big.'},
+          {tag:'Pintuan',rom:'pin-TU-an',eng:'Door',cat:'Home',ex:'Isara mo ang <strong>pintuan</strong>. — Close the door.'},
+          {tag:'Kusina',rom:'ku-SI-na',eng:'Kitchen',cat:'Home',ex:'Nandoon siya sa <strong>kusina</strong>. — She\'s in the kitchen.'},
+          {tag:'Kwarto',rom:'KWAR-to',eng:'Bedroom',cat:'Home',ex:'Linis na ang <strong>kwarto</strong>. — The bedroom is clean.'},
+          {tag:'Bintana',rom:'bin-TA-na',eng:'Window',cat:'Home',ex:'Buksan mo ang <strong>bintana</strong>. — Open the window.'},
+          {tag:'Sala',rom:'SA-la',eng:'Living room',cat:'Home',ex:'Nanonood kami sa <strong>sala</strong>. — We\'re watching TV in the living room.'},
+          {tag:'Banyo',rom:'BAN-yo',eng:'Bathroom',cat:'Home',ex:'Nasa <strong>banyo</strong> siya. — He/she is in the bathroom.'},
+          {tag:'Hagdan',rom:'HAG-dan',eng:'Stairs',cat:'Home',ex:'Mag-ingat sa <strong>hagdan</strong>. — Be careful on the stairs.'},
+        ]
+      },
+      {
+        id:'home-2', name:'Out & About', desc:'Places in the neighbourhood',
+        words:[
+          {tag:'Tindahan',rom:'tin-DA-han',eng:'Store / Shop',cat:'Places',ex:'Pumunta ako sa <strong>tindahan</strong>. — I went to the store.'},
+          {tag:'Palengke',rom:'pa-LENG-ke',eng:'Market',cat:'Places',ex:'Bumili kami sa <strong>palengke</strong>. — We bought from the market.'},
+          {tag:'Ospital',rom:'os-PI-tal',eng:'Hospital',cat:'Places',ex:'Nasa <strong>ospital</strong> siya. — He/she is at the hospital.'},
+          {tag:'Simbahan',rom:'sim-BA-han',eng:'Church',cat:'Places',ex:'Pumunta kami sa <strong>simbahan</strong>. — We went to church.'},
+          {tag:'Parke',rom:'PAR-ke',eng:'Park',cat:'Places',ex:'Maglalakad tayo sa <strong>parke</strong>. — Let\'s walk in the park.'},
+          {tag:'Kalsada',rom:'kal-SA-da',eng:'Street / Road',cat:'Places',ex:'Maingat ka sa <strong>kalsada</strong>. — Be careful on the road.'},
+          {tag:'Trabaho',rom:'tra-BA-ho',eng:'Work / Job',cat:'Places',ex:'Pumunta na siya sa <strong>trabaho</strong>. — He/she already went to work.'},
+          {tag:'Eskwelahan',rom:'es-kwe-LA-han',eng:'School',cat:'Places',ex:'Nag-aaral siya sa <strong>eskwelahan</strong>. — He/she studies at school.'},
+        ]
+      },
+    ]
+  },
+];
+
+// All cards flattened for practice modes
+const ALL_CARDS = UNITS.flatMap(u=>u.lessons.flatMap(l=>l.words));
+
+const FILL_SENTENCES = [
+  {sentence:'Ako ay ___ ngayon.',blank:'gutom',hint:'hungry',translation:'I am ___ right now.'},
+  {sentence:'___ po sa tulong ninyo.',blank:'Salamat',hint:'thank you',translation:'___ for your help.'},
+  {sentence:'Ang ___ ko ay mabait.',blank:'nanay',hint:'mother',translation:'My ___ is kind.'},
+  {sentence:'Gusto kong ___ ng adobo.',blank:'magluto',hint:'to cook',translation:'I want to ___ adobo.'},
+  {sentence:'Ang ___ ay mainit ngayon.',blank:'pagkain',hint:'food',translation:'The ___ is hot right now.'},
+  {sentence:'Siya ay ___ na.',blank:'pagod',hint:'tired',translation:'She/He is ___ now.'},
+  {sentence:'___ na tayo!',blank:'Kumain',hint:'to eat',translation:"Let's ___ now!"},
+  {sentence:'Ang ___ ko ay maganda.',blank:'bahay',hint:'home',translation:'My ___ is beautiful.'},
+  {sentence:'<strong>Mahal</strong> kita nang ___.',blank:'sobra',hint:'so much',translation:'I love you ___.'},
+  {sentence:'___ ka ng Tagalog araw-araw.',blank:'Mag-aral',hint:'study',translation:'___ Tagalog every day.'},
+];
+
+// ═══════════════════════
+// STATE
+// ═══════════════════════
+let STATE = JSON.parse(localStorage.getItem('tg_v4')||'null') || {
+  xp:0, level:1, streak:0, sessions:0,
+  learnedWords:[], lastSession:null,
+  completedLessons:[], // array of lesson ids
+};
+const XP_LEVELS=[0,200,450,750,1100,1500,2000,2700,3500];
+let currentMode='mc';
+let session={};
+let learnSession={};
+let speedInterval=null;
+let activeLessonId=null;
+
+function save(){localStorage.setItem('tg_v4',JSON.stringify(STATE))}
+const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
+const rand=(arr,n)=>shuffle(arr).slice(0,n);
+const $=id=>document.getElementById(id);
+
+// ── lesson unlock logic ──
+// A lesson is unlocked if it's the first in its unit, OR the previous lesson in the unit is completed.
+// Unit 0 lesson 0 is always unlocked.
+function isLessonUnlocked(unitIdx, lessonIdx){
+  if(unitIdx===0 && lessonIdx===0) return true;
+  // First lesson of a unit: previous unit's last lesson must be complete
+  if(lessonIdx===0){
+    const prevUnit=UNITS[unitIdx-1];
+    if(!prevUnit) return true;
+    const prevLesson=prevUnit.lessons[prevUnit.lessons.length-1];
+    return STATE.completedLessons.includes(prevLesson.id);
+  }
+  // Otherwise previous lesson in same unit must be complete
+  const prevLesson=UNITS[unitIdx].lessons[lessonIdx-1];
+  return STATE.completedLessons.includes(prevLesson.id);
+}
+
+function isLessonComplete(lessonId){return STATE.completedLessons.includes(lessonId)}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');window.scrollTo(0,0);
+}
+function showXPToast(msg){
+  const t=$('xp-toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
+}
+function showUnlockToast(lessonName){
+  const t=$('unlock-toast');
+  t.textContent=`🔓 "${lessonName}" unlocked!`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+function addXP(n){
+  const prev=STATE.level;STATE.xp+=n;
+  while(STATE.level<XP_LEVELS.length-1&&STATE.xp>=XP_LEVELS[STATE.level])STATE.level++;
+  if(STATE.level>prev)setTimeout(()=>{$('levelup-msg').textContent=`You reached Level ${STATE.level}! Keep it up.`;$('levelup-overlay').classList.add('show')},700);
+}
+function closeLevelUp(){$('levelup-overlay').classList.remove('show')}
+function renderHearts(max=3,rem){
+  $('hearts-row').innerHTML=Array.from({length:max},(_,i)=>`<div class="heart${i>=rem?' lost':''}">❤️</div>`).join('');
+}
+function markLearned(card){
+  if(card&&!STATE.learnedWords.find(w=>w.tag===card.tag))STATE.learnedWords.push({tag:card.tag,eng:card.eng});
+}
+
+// ═══════════════════════
+// HOME
+// ═══════════════════════
+function renderHome(){
+  $('streak-display').textContent=STATE.streak;
+  $('stat-words').textContent=STATE.learnedWords.length;
+  $('stat-lessons').textContent=STATE.completedLessons.length;
+  $('stat-sessions').textContent=STATE.sessions;
+  $('level-display').textContent=STATE.level;
+  $('xp-display').textContent=STATE.xp;
+  const nxt=XP_LEVELS[STATE.level]||9999,prv=XP_LEVELS[STATE.level-1]||0;
+  $('xp-next-display').textContent=nxt;
+  const pct=Math.min(100,((STATE.xp-prv)/(nxt-prv))*100);
+  setTimeout(()=>{$('xp-bar').style.width=pct+'%'},120);
+
+  // Render lesson map
+  const map=$('lesson-map');
+  map.innerHTML=UNITS.map((unit,ui)=>{
+    const lessonsHtml=unit.lessons.map((lesson,li)=>{
+      const unlocked=isLessonUnlocked(ui,li);
+      const completed=isLessonComplete(lesson.id);
+      const statusClass=completed?'completed':unlocked?'unlocked':'locked';
+      const badgeClass=completed?'badge-completed':unlocked?'badge-unlocked':'badge-locked';
+      const badgeContent=completed?'✓':`${ui+1}.${li+1}`;
+      const stars=completed?'★★★':'';
+      const lockIcon=!unlocked?'<div class="lock-icon">🔒</div>':'';
+      const xpLabel=completed?'Done':'80 XP';
+      return `
+        <div class="lesson-row ${statusClass}" onclick="${unlocked?`startLesson('${lesson.id}',${ui},${li})`:''}">
+          <div class="lesson-num-badge ${badgeClass}">${badgeContent}</div>
+          <div class="lesson-info">
+            <div class="lesson-name">${lesson.name}</div>
+            <div class="lesson-desc">${lesson.desc}</div>
+          </div>
+          <div class="lesson-right">
+            ${stars?`<div class="lesson-stars" style="color:var(--gold)">${stars}</div>`:''}
+            <div class="lesson-xp">${xpLabel}</div>
+            ${lockIcon}
+          </div>
+        </div>`;
+    }).join('');
+
+    // unit progress
+    const doneCount=unit.lessons.filter(l=>isLessonComplete(l.id)).length;
+    return `
+      <div class="map-unit">
+        <div class="unit-header">
+          <div class="unit-icon-wrap" style="background:${unit.color}22;border:1px solid ${unit.color}44">${unit.icon}</div>
+          <div class="unit-meta">
+            <div class="unit-title">${unit.title}</div>
+            <div class="unit-sub">${unit.sub}</div>
+          </div>
+          <div class="unit-prog">${doneCount}/${unit.lessons.length}</div>
+        </div>
+        <div class="lessons-list">${lessonsHtml}</div>
+      </div>`;
+  }).join('');
+
+  // learned pills
+  const pills=$('learned-pills');
+  pills.innerHTML=STATE.learnedWords.length===0
+    ?'<div style="font-size:.78rem;color:var(--muted)">Complete a lesson to unlock words.</div>'
+    :STATE.learnedWords.slice(-28).map(w=>`<div class="word-pill"><span class="tw">${w.tag}</span><span class="te">${w.eng}</span></div>`).join('');
+}
+
+function goHome(){clearInterval(speedInterval);speedInterval=null;showScreen('home');renderHome();}
+
+// ═══════════════════════════════════════
+// LESSON START
+// ═══════════════════════════════════════
+function startLesson(lessonId, unitIdx, lessonIdx){
+  activeLessonId=lessonId;
+  const lesson=UNITS[unitIdx].lessons[lessonIdx];
+  learnSession={
+    words:[...lesson.words],
+    correct:0, wrong:0, xpGained:0,
+    lessonId, unitIdx, lessonIdx,
+  };
+  renderLearnScroll(lesson);
+  showScreen('learn');
+}
+
+function renderLearnScroll(lesson){
+  $('learn-title').textContent=lesson.name;
+  $('learn-counter').textContent=`${learnSession.words.length} words`;
+  $('cta-word-count').textContent=learnSession.words.length;
+  $('learn-quiz-cta').style.display='none';
+
+  $('learn-words-list').innerHTML=learnSession.words.map((card,i)=>`
+    <div class="browse-card" style="margin-bottom:10px;animation:fadeUp .35s ease ${i*.06}s both">
+      <div class="browse-num">${i+1}</div>
+      <div class="browse-main">
+        <div class="browse-tag">${card.tag}</div>
+        <div class="browse-rom">${card.rom}</div>
+        <div class="browse-eng">${card.eng}</div>
+        <div class="browse-ex">${card.ex}</div>
+      </div>
+      <div class="browse-cat-pill">${card.cat}</div>
+    </div>`).join('');
+
+  // Watch for user scrolling near the bottom — reveal quiz CTA
+  const scroller=$('learn-scroll');
+  scroller.scrollTop=0;
+
+  function onScroll(){
+    const nearBottom=scroller.scrollTop+scroller.clientHeight >= scroller.scrollHeight-80;
+    if(nearBottom){
+      $('learn-quiz-cta').style.display='block';
+      scroller.removeEventListener('scroll',onScroll);
+    }
+  }
+  scroller.addEventListener('scroll',onScroll);
+
+  // Also show CTA immediately if content fits without scrolling
+  requestAnimationFrame(()=>{
+    if(scroller.scrollHeight<=scroller.clientHeight+10){
+      $('learn-quiz-cta').style.display='block';
+    }
+  });
+}
+
+function restartLearn(){
+  const lesson=UNITS[learnSession.unitIdx].lessons[learnSession.lessonIdx];
+  renderLearnScroll(lesson);
+  showScreen('learn');
+}
+
+function scrollToTop(){
+  $('learn-scroll').scrollTo({top:0,behavior:'smooth'});
+}
+
+function showTransition(){
+  $('tc-words').innerHTML=learnSession.words.map(w=>`<div class="tc-word-pill">${w.tag}</div>`).join('');
+  showScreen('transition');
+}
+
+function startQuizPhase(){
+  currentMode='learn-quiz';
+  const q=shuffle([...learnSession.words]);
+  session={
+    mode:'learn-quiz', queue:q,
+    idx:0, hearts:3, correct:0, wrong:0,
+    xpGained:learnSession.xpGained, answered:false,
+  };
+  showScreen('game');
+  $('speed-timer-section').style.display='none';
+  renderMCQuestion();
+}
+
+// ═══════════════════════════════════════
+// PRACTICE MODE ROUTER
+// ═══════════════════════════════════════
+function startMode(mode){
+  currentMode=mode;clearInterval(speedInterval);speedInterval=null;
+  switch(mode){
+    case'mc':startMC();break;
+    case'fill':startFill();break;
+    case'match':startMatch();break;
+    case'speed':startSpeed();break;
+    case'couples':startCouples();break;
+  }
+  showScreen('game');
+}
+function playAgain(){
+  if(currentMode==='learn-quiz'){
+    learnSession.correct=0;learnSession.wrong=0;learnSession.xpGained=0;
+    restartLearn();
+  } else startMode(currentMode);
+}
+
+// ── MC (shared by practice + learn-quiz) ──
+function startMC(){
+  session={mode:'mc',queue:rand(ALL_CARDS,10),idx:0,hearts:3,correct:0,wrong:0,xpGained:0,answered:false};
+  $('speed-timer-section').style.display='none';
+  renderMCQuestion();
+}
+
+function renderMCQuestion(){
+  const card=session.queue[session.idx];
+  const total=session.queue.length;
+  $('prog-fill').style.width=(session.idx/total*100)+'%';
+  $('q-counter').textContent=`${session.idx+1}/${total}`;
+  renderHearts(3,session.hearts);
+  const toEng=session.idx%2===0;
+  const pool=session.mode==='learn-quiz'?learnSession.words:ALL_CARDS;
+  const distractors=rand(pool.filter(c=>c.tag!==card.tag),3);
+  const opts=shuffle([card,...distractors]);
+  const letters=['A','B','C','D'];
+  const isLQ=session.mode==='learn-quiz';
+  $('card-area').innerHTML=`
+    <div class="mode-badge ${isLQ?'mb-teal':'mb-gold'}">${isLQ?'🎯 Quiz':'🃏 Flashcard'}</div>
+    <div class="question-card pop-in" ${isLQ?'style="border-color:var(--teal-border)"':''}>
+      <div class="q-category">${card.cat}</div>
+      <div class="q-tagalog" ${isLQ?'style="color:var(--teal)"':''}>${toEng?card.tag:card.eng}</div>
+      ${toEng?`<div class="q-rom">${card.rom}</div>`:''}
+      <div class="q-prompt">${toEng?'What does this mean?':'How do you say this in Tagalog?'}</div>
+    </div>
+    <div class="choices">
+      ${opts.map((o,i)=>`
+        <button class="choice-btn pop-in" style="animation-delay:${i*.05}s"
+          data-tag="${o.tag}" onclick="selectMC(this,'${o.tag}','${card.tag}','${card.eng}','${toEng}')">
+          <div class="choice-letter">${letters[i]}</div>
+          <span>${toEng?o.eng:o.tag}</span>
+        </button>`).join('')}
+    </div>
+    <div class="feedback-bar" id="feedback-bar"></div>
+    <button class="btn-next" id="btn-next" onclick="nextMC()">Continue</button>`;
+}
+
+function selectMC(btn,selected,correct,eng,toEng){
+  if(session.answered)return;session.answered=true;
+  const isOk=selected===correct;
+  document.querySelectorAll('.choice-btn').forEach(b=>{b.disabled=true;if(b.dataset.tag===correct)b.classList.add('correct')});
+  const fb=$('feedback-bar');
+  if(isOk){
+    btn.classList.add('correct');
+    fb.className='feedback-bar correct-fb show';
+    fb.innerHTML=`<div class="fb-icon">✓</div><div class="fb-text"><div class="fb-main">Tama!</div><div class="fb-sub">${correct} = ${eng}</div></div>`;
+    session.correct++;session.xpGained+=10;
+    markLearned(ALL_CARDS.find(c=>c.tag===correct));
+    showXPToast('+10 XP');
+  } else {
+    btn.classList.add('wrong');
+    fb.className='feedback-bar wrong-fb show';
+    fb.innerHTML=`<div class="fb-icon">✗</div><div class="fb-text"><div class="fb-main">Mali.</div><div class="fb-sub">Answer: ${toEng==='true'?eng:correct}</div></div>`;
+    session.hearts--;session.wrong++;
+    renderHearts(3,session.hearts);
+    document.querySelector('.question-card').classList.add('shake');
+    if(session.hearts<=0){setTimeout(()=>endSession(),900);return;}
+  }
+  $('btn-next').className='btn-next show';
+}
+function nextMC(){
+  session.idx++;
+  if(session.idx>=session.queue.length||session.hearts<=0)endSession();
+  else{session.answered=false;renderMCQuestion();}
+}
+
+// ── FILL ──
+function startFill(){
+  session={mode:'fill',queue:shuffle([...FILL_SENTENCES]),idx:0,hearts:3,correct:0,wrong:0,xpGained:0,answered:false,hintsUsed:0};
+  $('speed-timer-section').style.display='none';renderFillQ();
+}
+function renderFillQ(){
+  const q=session.queue[session.idx];
+  $('prog-fill').style.width=(session.idx/session.queue.length*100)+'%';
+  $('q-counter').textContent=`${session.idx+1}/${session.queue.length}`;
+  renderHearts(3,session.hearts);
+  const disp=q.sentence.replace('___','<span style="color:var(--blue);font-weight:700">___</span>');
+  $('card-area').innerHTML=`
+    <div class="mode-badge mb-blue">✍️ Fill Blank</div>
+    <div class="question-card pop-in">
+      <div class="q-category">Complete the sentence</div>
+      <div class="q-tagalog" style="font-size:1.35rem;line-height:1.4">${disp}</div>
+      <div class="q-rom" style="margin-top:10px">${q.translation}</div>
+    </div>
+    <div style="font-size:.72rem;color:var(--muted);text-align:center;margin-bottom:10px">Type the missing Tagalog word</div>
+    <input class="blank-input" id="blank-input" type="text" placeholder="Tagalog word…" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')submitFill()">
+    <button class="btn-submit" id="btn-submit" onclick="submitFill()">Check Answer</button>
+    <button class="btn-next" id="btn-next" onclick="nextFill()" style="display:none">Continue</button>
+    <div class="feedback-bar" id="feedback-bar"></div>
+    <div style="text-align:center;margin-top:10px"><span style="font-size:.72rem;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showHint()">Show hint</span></div>
+    <div id="hint-area" style="display:none;text-align:center;font-size:.8rem;color:var(--muted);margin-top:6px;font-style:italic"></div>`;
+  setTimeout(()=>$('blank-input')&&$('blank-input').focus(),100);
+}
+function showHint(){const q=session.queue[session.idx];$('hint-area').style.display='block';$('hint-area').textContent=`Hint: "${q.hint}"`;session.hintsUsed++;}
+function submitFill(){
+  if(session.answered)return;
+  const q=session.queue[session.idx];
+  const input=$('blank-input');
+  const val=input.value.trim().toLowerCase();
+  const correct=q.blank.toLowerCase();
+  session.answered=true;input.disabled=true;$('btn-submit').disabled=true;
+  const isOk=val===correct;
+  const fb=$('feedback-bar');
+  if(isOk){
+    input.classList.add('correct');fb.className='feedback-bar correct-fb show';
+    const xp=session.hintsUsed>0?6:10;session.xpGained+=xp;session.correct++;
+    markLearned(ALL_CARDS.find(c=>c.tag.toLowerCase()===correct)||{tag:q.blank,eng:q.hint});
+    showXPToast(`+${xp} XP`);
+    fb.innerHTML=`<div class="fb-icon">✓</div><div class="fb-text"><div class="fb-main">Tama!</div><div class="fb-sub">The word is <strong>${q.blank}</strong></div></div>`;
+  } else {
+    input.classList.add('wrong');fb.className='feedback-bar wrong-fb show';
+    session.hearts--;session.wrong++;renderHearts(3,session.hearts);
+    fb.innerHTML=`<div class="fb-icon">✗</div><div class="fb-text"><div class="fb-main">Mali.</div><div class="fb-sub">Answer: <strong>${q.blank}</strong></div></div>`;
+    if(session.hearts<=0){setTimeout(()=>endSession(),900);return;}
+  }
+  $('btn-next').style.display='block';$('btn-next').className='btn-next show';$('btn-submit').style.display='none';
+}
+function nextFill(){session.idx++;session.answered=false;session.hintsUsed=0;if(session.idx>=session.queue.length||session.hearts<=0)endSession();else renderFillQ();}
+
+// ── MATCH ──
+function startMatch(){
+  const pairs=rand(ALL_CARDS,6);
+  session={mode:'match',pairs,matched:0,selected:null,correct:0,wrong:0,xpGained:0};
+  $('speed-timer-section').style.display='none';renderMatch();
+}
+function renderMatch(){
+  $('prog-fill').style.width=(session.matched/session.pairs.length*100)+'%';
+  $('q-counter').textContent=`${session.matched}/${session.pairs.length}`;
+  $('hearts-row').innerHTML='';
+  const tagCol=[...session.pairs],engCol=shuffle([...session.pairs]);
+  $('card-area').innerHTML=`
+    <div class="mode-badge mb-purple">🔗 Word Match</div>
+    <div class="question-card pop-in" style="padding:16px 18px;margin-bottom:12px">
+      <div class="q-category" style="margin-bottom:6px">Tap matching pairs</div>
+      <div style="text-align:center;font-size:.82rem;color:var(--muted)">Matched: <span id="match-score" style="color:var(--green);font-weight:700">${session.matched}</span> / ${session.pairs.length}</div>
+    </div>
+    <div class="match-grid" id="match-grid">
+      ${tagCol.map((p,i)=>`<button class="match-btn ${p._matched?'matched':''} pop-in" style="animation-delay:${i*.04}s" data-tag="${p.tag}" data-side="tag" onclick="selectMatch(this)" ${p._matched?'disabled':''}>${p._matched?'✓':p.tag}</button>`).join('')}
+      ${engCol.map((p,i)=>`<button class="match-btn ${p._matched?'matched':''} pop-in" style="animation-delay:${(i+6)*.04}s" data-tag="${p.tag}" data-side="eng" onclick="selectMatch(this)" ${p._matched?'disabled':''}>${p._matched?'✓':p.eng}</button>`).join('')}
+    </div>
+    <div class="feedback-bar" id="feedback-bar"></div>`;
+}
+function selectMatch(btn){
+  if(btn.disabled)return;
+  if(!session.selected){
+    document.querySelectorAll('.match-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');session.selected=btn;
+  } else {
+    const first=session.selected;
+    if(first===btn){first.classList.remove('selected');session.selected=null;return;}
+    if(first.dataset.side===btn.dataset.side){first.classList.remove('selected');btn.classList.add('selected');session.selected=btn;return;}
+    const tagEl=first.dataset.side==='tag'?first:btn;
+    const engEl=first.dataset.side==='eng'?first:btn;
+    if(tagEl.dataset.tag===engEl.dataset.tag){
+      [tagEl,engEl].forEach(b=>{b.classList.remove('selected');b.classList.add('matched');b.disabled=true;b.textContent='✓'});
+      session.matched++;session.correct++;session.xpGained+=7;
+      markLearned(ALL_CARDS.find(c=>c.tag===tagEl.dataset.tag));
+      showXPToast('+7 XP');
+      $('prog-fill').style.width=(session.matched/session.pairs.length*100)+'%';
+      $('q-counter').textContent=`${session.matched}/${session.pairs.length}`;
+      $('match-score').textContent=session.matched;
+      if(session.matched===session.pairs.length)setTimeout(()=>endSession(),500);
+    } else {
+      [first,btn].forEach(b=>{b.classList.add('wrong-flash');b.classList.remove('selected')});
+      session.wrong++;setTimeout(()=>[first,btn].forEach(b=>b.classList.remove('wrong-flash')),500);
+    }
+    session.selected=null;
+  }
+}
+
+// ── SPEED ──
+const SPEED_SECS=8;
+function startSpeed(){
+  session={mode:'speed',queue:rand(ALL_CARDS,12),idx:0,hearts:3,correct:0,wrong:0,xpGained:0,answered:false,timeLeft:SPEED_SECS};
+  $('speed-timer-section').style.display='block';renderSpeedQ();
+}
+function renderSpeedQ(){
+  const card=session.queue[session.idx];
+  $('prog-fill').style.width=(session.idx/session.queue.length*100)+'%';
+  $('q-counter').textContent=`${session.idx+1}/${session.queue.length}`;
+  renderHearts(3,session.hearts);
+  session.answered=false;session.timeLeft=SPEED_SECS;
+  updateSpeedTimer();clearInterval(speedInterval);
+  speedInterval=setInterval(()=>{session.timeLeft-=.1;updateSpeedTimer();if(session.timeLeft<=0){clearInterval(speedInterval);if(!session.answered)timeOut();}},100);
+  const toEng=session.idx%2===0;
+  const opts=shuffle([card,...rand(ALL_CARDS.filter(c=>c.tag!==card.tag),3)]);
+  const letters=['A','B','C','D'];
+  $('card-area').innerHTML=`
+    <div class="mode-badge mb-orange">⚡ Speed</div>
+    <div class="question-card pop-in">
+      <div class="q-category">${card.cat}</div>
+      <div class="q-tagalog">${toEng?card.tag:card.eng}</div>
+      ${toEng?`<div class="q-rom">${card.rom}</div>`:''}
+      <div class="q-prompt">${toEng?'Meaning?':'In Tagalog?'}</div>
+    </div>
+    <div class="choices">
+      ${opts.map((o,i)=>`<button class="choice-btn pop-in" style="animation-delay:${i*.04}s" data-tag="${o.tag}" onclick="selectSpeed(this,'${o.tag}','${card.tag}','${card.eng}','${toEng}')"><div class="choice-letter">${letters[i]}</div><span>${toEng?o.eng:o.tag}</span></button>`).join('')}
+    </div>
+    <div class="feedback-bar" id="feedback-bar"></div>
+    <button class="btn-next" id="btn-next" onclick="nextSpeed()">Continue</button>`;
+}
+function updateSpeedTimer(){
+  const pct=(session.timeLeft/SPEED_SECS)*100;
+  $('speed-timer-fill').style.width=pct+'%';
+  $('speed-time-label').textContent=Math.ceil(session.timeLeft);
+  const d=session.timeLeft<3;
+  $('speed-timer-fill').className='speed-timer-fill'+(d?' danger':'');
+  $('speed-time-label').className='speed-time-label'+(d?' danger':'');
+}
+function timeOut(){
+  session.answered=true;session.hearts--;session.wrong++;
+  const card=session.queue[session.idx];
+  document.querySelectorAll('.choice-btn').forEach(b=>{b.disabled=true;if(b.dataset.tag===card.tag)b.classList.add('correct')});
+  $('feedback-bar').className='feedback-bar wrong-fb show';
+  $('feedback-bar').innerHTML=`<div class="fb-icon">⏱</div><div class="fb-text"><div class="fb-main">Too slow!</div><div class="fb-sub">Answer: ${card.tag} = ${card.eng}</div></div>`;
+  renderHearts(3,session.hearts);
+  if(session.hearts<=0){setTimeout(()=>endSession(),900);return;}
+  $('btn-next').className='btn-next show';
+}
+function selectSpeed(btn,selected,correct,eng,toEng){
+  if(session.answered)return;clearInterval(speedInterval);session.answered=true;
+  const isOk=selected===correct;
+  document.querySelectorAll('.choice-btn').forEach(b=>{b.disabled=true;if(b.dataset.tag===correct)b.classList.add('correct')});
+  const fb=$('feedback-bar');
+  if(isOk){
+    btn.classList.add('correct');
+    const bonus=session.timeLeft>5?15:session.timeLeft>2?10:5;
+    session.xpGained+=bonus;session.correct++;
+    markLearned(ALL_CARDS.find(c=>c.tag===correct));
+    showXPToast(`+${bonus} XP`);
+    fb.className='feedback-bar correct-fb show';
+    fb.innerHTML=`<div class="fb-icon">✓</div><div class="fb-text"><div class="fb-main">Tama! +${bonus} XP</div><div class="fb-sub">${session.timeLeft.toFixed(1)}s left — speed bonus!</div></div>`;
+  } else {
+    btn.classList.add('wrong');session.hearts--;session.wrong++;renderHearts(3,session.hearts);
+    document.querySelector('.question-card').classList.add('shake');
+    fb.className='feedback-bar wrong-fb show';
+    fb.innerHTML=`<div class="fb-icon">✗</div><div class="fb-text"><div class="fb-main">Mali.</div><div class="fb-sub">Answer: ${toEng==='true'?eng:correct}</div></div>`;
+    if(session.hearts<=0){setTimeout(()=>endSession(),900);return;}
+  }
+  $('btn-next').className='btn-next show';
+}
+function nextSpeed(){session.idx++;if(session.idx>=session.queue.length||session.hearts<=0)endSession();else renderSpeedQ();}
+
+// ── COUPLES ──
+function startCouples(){
+  session={mode:'couples',queue:rand(ALL_CARDS,10),idx:0,correct:0,wrong:0,xpGained:0,revealed:false};
+  $('speed-timer-section').style.display='none';$('hearts-row').innerHTML='';renderCouplesQ();
+}
+function renderCouplesQ(){
+  const card=session.queue[session.idx];
+  $('prog-fill').style.width=(session.idx/session.queue.length*100)+'%';
+  $('q-counter').textContent=`${session.idx+1}/${session.queue.length}`;
+  session.revealed=false;
+  $('card-area').innerHTML=`
+    <div class="mode-badge mb-green">💑 Couples</div>
+    <div class="couples-card pop-in">
+      <div class="q-category" style="margin-bottom:10px">Show him this word</div>
+      <div class="couple-word-big">${card.eng}</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-top:6px">Ask: "Paano mo sabihin ito sa Tagalog?"</div>
+      <button class="couple-reveal-btn" onclick="revealCouple()">Reveal Answer</button>
+      <div id="couple-answer" style="display:none;font-size:1.3rem;font-weight:600;color:var(--gold);margin-top:16px">${card.tag}</div>
+      <div id="couple-rom" style="display:none;font-size:.8rem;color:var(--muted);margin-top:4px">${card.rom}</div>
+      <div id="couple-cat" style="display:none;font-size:.78rem;color:var(--muted2);margin-top:8px;font-style:italic">Category: ${card.cat}</div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="verdict-btn verdict-got" id="verdict-got" onclick="verdictCouple(true)">✓ He got it!</button>
+        <button class="verdict-btn verdict-missed" id="verdict-missed" onclick="verdictCouple(false)">✗ Missed it</button>
+      </div>
+    </div>
+    <div class="feedback-bar" id="feedback-bar"></div>
+    <button class="btn-next" id="btn-next" onclick="nextCouples()">Next Word →</button>`;
+}
+function revealCouple(){
+  if(session.revealed)return;session.revealed=true;
+  document.querySelector('.couple-reveal-btn').style.display='none';
+  ['couple-answer','couple-rom','couple-cat'].forEach(id=>{$(id).style.display='block'});
+  ['verdict-got','verdict-missed'].forEach(id=>{$(id).style.display='flex'});
+}
+function verdictCouple(got){
+  if(!session.revealed)return;
+  ['verdict-got','verdict-missed'].forEach(id=>{$(id).disabled=true});
+  const card=session.queue[session.idx];
+  const fb=$('feedback-bar');
+  if(got){
+    fb.className='feedback-bar correct-fb show';
+    fb.innerHTML=`<div class="fb-icon">✓</div><div class="fb-text"><div class="fb-main">Magaling siya!</div><div class="fb-sub">+7 XP</div></div>`;
+    session.correct++;session.xpGained+=7;markLearned(card);showXPToast('+7 XP');
+  } else {
+    fb.className='feedback-bar wrong-fb show';
+    fb.innerHTML=`<div class="fb-icon">✗</div><div class="fb-text"><div class="fb-main">Subok ulit!</div><div class="fb-sub">Practice: <strong>${card.tag}</strong></div></div>`;
+    session.wrong++;
+  }
+  $('btn-next').className='btn-next show';
+}
+function nextCouples(){session.idx++;if(session.idx>=session.queue.length)endSession();else renderCouplesQ();}
+
+// ═══════════════════════════════════════
+// END SESSION
+// ═══════════════════════════════════════
+function endSession(){
+  clearInterval(speedInterval);speedInterval=null;
+  const isLearnQuiz=session.mode==='learn-quiz';
+
+  // Mark lesson complete if quiz passed with ≥60% accuracy
+  let justUnlockedLesson=null;
+  if(isLearnQuiz && activeLessonId && !STATE.completedLessons.includes(activeLessonId)){
+    const total=session.queue.length;
+    const acc=session.correct/Math.max(total,1);
+    if(acc>=0.6){
+      STATE.completedLessons.push(activeLessonId);
+      // Check if a new lesson just unlocked
+      UNITS.forEach((unit,ui)=>{
+        unit.lessons.forEach((lesson,li)=>{
+          if(!STATE.completedLessons.includes(lesson.id)&&isLessonUnlocked(ui,li)){
+            justUnlockedLesson=lesson.name;
+          }
+        });
+      });
+    }
+  }
+
+  addXP(session.xpGained);
+  STATE.sessions++;
+  const today=new Date().toDateString();
+  if(STATE.lastSession!==today){
+    const yesterday=new Date(Date.now()-86400000).toDateString();
+    STATE.streak=STATE.lastSession===yesterday?STATE.streak+1:1;
+    STATE.lastSession=today;
+  }
+  save();
+
+  const total=session.mode==='match'?session.pairs.length:session.idx;
+  const denom=Math.max(total,session.correct+session.wrong,1);
+  const acc=Math.round((session.correct/denom)*100);
+
+  $('res-correct').textContent=session.correct;
+  $('res-wrong').textContent=session.wrong;
+  $('res-acc').textContent=acc+'%';
+  $('xp-earned-val').textContent='+'+session.xpGained+' XP';
+
+  const ring=$('result-ring');
+  ring.style.strokeDashoffset=339;
+  ring.className=acc>=80?`ring-fill ${isLearnQuiz?'rteal':'rgreen'}`:acc>=50?'ring-fill':'ring-fill';
+
+  let emoji,title,sub;
+  if(acc===100){emoji='🏆';title='Perpekto!';sub='A perfect score. Absolutely flawless!';}
+  else if(acc>=80){emoji='⭐';title='Magaling!';sub='Strong result. Streak stays alive!';}
+  else if(acc>=60){emoji='💪';title='Mabuti!';sub='Good progress — keep pushing!';}
+  else{emoji='📚';title='Subukan Ulit!';sub='Review and try again — it will click!';}
+  if(isLearnQuiz&&acc>=80){emoji='🌟';title='Natututo na siya!';sub='Lesson complete! New words unlocked.';}
+  if(session.mode==='couples'&&session.correct>7){emoji='💑';title='Sobrang Galing!';sub='He\'s learning fast with your help!';}
+  if(session.mode==='speed'&&acc>=80){emoji='⚡';title='Bilis mo!';sub='Speed and accuracy — impressive!';}
+
+  $('result-emoji').textContent=emoji;
+  $('result-title').textContent=title;
+  $('result-sub').textContent=sub;
+
+  showScreen('result');
+  setTimeout(()=>{ring.style.strokeDashoffset=339-(acc/100)*339},150);
+
+  if(justUnlockedLesson){
+    setTimeout(()=>showUnlockToast(justUnlockedLesson),1200);
+  }
+}
+
+// ═══════════════════════════════════════
+// PWA — MANIFEST, SERVICE WORKER, INSTALL
+// ═══════════════════════════════════════
+
+// Generate app icon as a canvas data URL (🌺 on dark bg)
+function makeIconDataURL(size){
+  const c=document.createElement('canvas');
+  c.width=c.height=size;
+  const ctx=c.getContext('2d');
+  // Background
+  ctx.fillStyle='#0E0E12';
+  ctx.beginPath();
+  const r=size*0.22;
+  ctx.moveTo(r,0);ctx.lineTo(size-r,0);ctx.quadraticCurveTo(size,0,size,r);
+  ctx.lineTo(size,size-r);ctx.quadraticCurveTo(size,size,size-r,size);
+  ctx.lineTo(r,size);ctx.quadraticCurveTo(0,size,0,size-r);
+  ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);
+  ctx.closePath();ctx.fill();
+  // Gold ring
+  ctx.strokeStyle='#F0C060';ctx.lineWidth=size*0.04;
+  ctx.beginPath();ctx.arc(size/2,size/2,size*0.42,0,Math.PI*2);ctx.stroke();
+  // Emoji
+  ctx.font=`${size*0.46}px serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('🌺',size/2,size/2+size*0.03);
+  return c.toDataURL('image/png');
+}
+
+function setupPWA(){
+  const icon192=makeIconDataURL(192);
+  const icon512=makeIconDataURL(512);
+
+  // Set apple touch icon
+  document.getElementById('apple-touch-icon').href=icon192;
+
+  // Build and inject manifest as blob URL
+  const manifest={
+    name:'Tagalog Daily',
+    short_name:'Tagalog',
+    description:'Learn Tagalog together — daily lessons, streaks & couples mode',
+    start_url:'./',
+    display:'standalone',
+    background_color:'#0E0E12',
+    theme_color:'#0E0E12',
+    orientation:'portrait',
+    icons:[
+      {src:icon192,sizes:'192x192',type:'image/png',purpose:'any maskable'},
+      {src:icon512,sizes:'512x512',type:'image/png',purpose:'any maskable'},
+    ]
+  };
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+  document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
+
+  // Register service worker (inline as blob)
+  const swCode=`
+const CACHE='tagalog-daily-v4';
+const ASSETS=['./', location.href];
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).catch(()=>{}));
+  self.skipWaiting();
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  e.respondWith(caches.match(e.request).then(cached=>{
+    const fresh=fetch(e.request).then(res=>{
+      if(res&&res.status===200){
+        const clone=res.clone();
+        caches.open(CACHE).then(c=>c.put(e.request,clone));
+      }
+      return res;
+    }).catch(()=>cached);
+    return cached||fresh;
+  }));
+});`;
+  const swBlob=new Blob([swCode],{type:'application/javascript'});
+  const swURL=URL.createObjectURL(swBlob);
+  navigator.serviceWorker&&navigator.serviceWorker.register(swURL).catch(()=>{});
+
+  // Install prompt (Android/Chrome)
+  let deferredPrompt=null;
+  const banner=$('install-banner');
+  const dismissed=localStorage.getItem('tg_install_dismissed');
+
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();deferredPrompt=e;
+    if(!dismissed&&!window.matchMedia('(display-mode: standalone)').matches){
+      setTimeout(()=>banner.classList.add('show'),2500);
+    }
+  });
+
+  window.triggerInstall=()=>{
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(()=>{deferredPrompt=null;banner.classList.remove('show');});
+    }
+  };
+  window.dismissInstall=()=>{
+    banner.classList.remove('show');
+    localStorage.setItem('tg_install_dismissed','1');
+  };
+
+  // iOS Safari install tip
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone=window.navigator.standalone===true;
+  const iosDismissed=localStorage.getItem('tg_ios_tip_dismissed');
+  if(isIOS&&!isStandalone&&!iosDismissed){
+    setTimeout(()=>$('ios-tip').classList.add('show'),2500);
+  }
+  window.dismissIosTip=()=>{
+    $('ios-tip').classList.remove('show');
+    localStorage.setItem('tg_ios_tip_dismissed','1');
+  };
+}
+
+// ═══════════════════════
+// INIT
+// ═══════════════════════
+renderHome();
+setupPWA();
+</script>
+</body>
+</html>
