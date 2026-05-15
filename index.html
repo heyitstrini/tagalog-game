@@ -325,7 +325,24 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradi
 .unlock-toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);z-index:999;background:var(--surface);border:1px solid var(--green-border);color:var(--green);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.85rem;padding:10px 20px;border-radius:12px;opacity:0;transition:all .4s cubic-bezier(.34,1.3,.64,1);pointer-events:none;white-space:nowrap}
 .unlock-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── QUIZ HINT ── */
+/* ── LESSON COMPLETE OVERLAY ── */
+.lesson-complete-overlay{position:fixed;inset:0;z-index:990;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 28px;text-align:center;opacity:0;pointer-events:none;transition:opacity .4s ease}
+.lesson-complete-overlay.show{opacity:1;pointer-events:all}
+.lc-burst{font-size:4rem;margin-bottom:16px;animation:bounceIn .6s cubic-bezier(.34,1.3,.64,1) both .1s}
+.lc-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:800;margin-bottom:8px;line-height:1.1}
+.lc-sub{font-size:.9rem;color:var(--muted);margin-bottom:28px;line-height:1.5;max-width:300px}
+.lc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:360px;margin-bottom:28px}
+.lc-stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 8px}
+.lc-stat .sv{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:4px}
+.lc-stat .sl{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.lc-xp{background:var(--gold-dim);border:1px solid var(--gold-border);border-radius:12px;padding:13px 20px;display:flex;align-items:center;justify-content:space-between;width:100%;max-width:360px;margin-bottom:24px}
+.lc-xp-label{font-size:.82rem;color:var(--muted)}
+.lc-xp-val{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.1rem;font-weight:800;color:var(--gold)}
+.lc-words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:28px;max-width:360px}
+.lc-pill{background:var(--teal-dim);border:1px solid var(--teal-border);border-radius:7px;padding:4px 10px;font-size:.76rem;color:var(--teal);font-weight:500}
+.lc-btn{width:100%;max-width:360px;padding:15px;background:var(--gold);color:#0E0E12;border:none;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .15s}
+.lc-btn:hover{background:#FBBF24}
+
 .hint-trigger{display:none;text-align:center;margin-top:14px}
 .hint-trigger a{font-size:.72rem;color:var(--muted2);cursor:pointer;text-decoration:none;border-bottom:1px dashed var(--muted2);padding-bottom:1px;transition:color .15s}
 .hint-trigger a:hover{color:var(--muted)}
@@ -509,6 +526,24 @@ body::before{content:'';position:fixed;inset:0;z-index:0;background:radial-gradi
 
 <div class="xp-toast" id="xp-toast">+10 XP</div>
 <div class="unlock-toast" id="unlock-toast">🔓 New lesson unlocked!</div>
+
+<!-- Lesson complete overlay (learn-quiz only) -->
+<div class="lesson-complete-overlay" id="lesson-complete-overlay">
+  <div class="lc-burst" id="lc-burst">🌟</div>
+  <div class="lc-title" id="lc-title">Lesson Complete!</div>
+  <div class="lc-sub" id="lc-sub">Great work — those words are now yours.</div>
+  <div class="lc-stats">
+    <div class="lc-stat"><div class="sv v-green" id="lc-correct">0</div><div class="sl">Correct</div></div>
+    <div class="lc-stat"><div class="sv v-red" id="lc-wrong">0</div><div class="sl">Missed</div></div>
+    <div class="lc-stat"><div class="sv v-gold" id="lc-acc">0%</div><div class="sl">Accuracy</div></div>
+  </div>
+  <div class="lc-xp">
+    <div class="lc-xp-label">XP Earned</div>
+    <div class="lc-xp-val" id="lc-xp-val">+0 XP</div>
+  </div>
+  <div class="lc-words" id="lc-words"></div>
+  <button class="lc-btn" onclick="completeLessonAndGoHome()">Back to Map 🗺</button>
+</div>
 
 <!-- Android/Desktop install banner -->
 <div class="install-banner" id="install-banner">
@@ -766,6 +801,7 @@ let STATE = JSON.parse(localStorage.getItem('tg_v4')||'null') || {
   learnedWords:[], lastSession:null,
   completedLessons:[], // array of lesson ids
 };
+function save(){localStorage.setItem('tg_v4',JSON.stringify(STATE))}
 const XP_LEVELS=[0,200,450,750,1100,1500,2000,2700,3500];
 let currentMode='mc';
 let session={};
@@ -1070,6 +1106,7 @@ function showTransition(){
 
 function startQuizPhase(){
   currentMode='learn-quiz';
+  sessionEnded=false;
   const q=shuffle([...learnSession.words]);
   session={
     mode:'learn-quiz', queue:q,
@@ -1085,7 +1122,7 @@ function startQuizPhase(){
 // PRACTICE MODE ROUTER
 // ═══════════════════════════════════════
 function startMode(mode){
-  currentMode=mode;clearInterval(speedInterval);speedInterval=null;
+  currentMode=mode;clearInterval(speedInterval);speedInterval=null;sessionEnded=false;
   switch(mode){
     case'mc':startMC();break;
     case'fill':startFill();break;
@@ -1418,18 +1455,26 @@ function nextCouples(){session.idx++;if(session.idx>=session.queue.length)endSes
 // ═══════════════════════════════════════
 // END SESSION
 // ═══════════════════════════════════════
+let sessionEnded=false; // one-shot guard
+
 function endSession(){
+  // Guard — prevent spam clicks calling this multiple times
+  if(sessionEnded)return;
+  sessionEnded=true;
+
   clearInterval(speedInterval);speedInterval=null;
   const isLearnQuiz=session.mode==='learn-quiz';
 
-  // Mark lesson complete if quiz passed with ≥60% accuracy
+  // Accuracy
+  const total=session.mode==='match'?session.pairs.length:session.idx;
+  const denom=Math.max(total,session.correct+session.wrong,1);
+  const acc=Math.round((session.correct/denom)*100);
+
+  // Mark lesson complete if quiz passed with ≥60%
   let justUnlockedLesson=null;
   if(isLearnQuiz && activeLessonId && !STATE.completedLessons.includes(activeLessonId)){
-    const total=session.queue.length;
-    const acc=session.correct/Math.max(total,1);
-    if(acc>=0.6){
+    if(acc>=60){
       STATE.completedLessons.push(activeLessonId);
-      // Check if a new lesson just unlocked
       UNITS.forEach((unit,ui)=>{
         unit.lessons.forEach((lesson,li)=>{
           if(!STATE.completedLessons.includes(lesson.id)&&isLessonUnlocked(ui,li)){
@@ -1440,6 +1485,8 @@ function endSession(){
     }
   }
 
+  // Add XP and update streak ONCE
+  const prevLevel=STATE.level;
   addXP(session.xpGained);
   STATE.sessions++;
   const today=new Date().toDateString();
@@ -1450,10 +1497,59 @@ function endSession(){
   }
   save();
 
-  const total=session.mode==='match'?session.pairs.length:session.idx;
-  const denom=Math.max(total,session.correct+session.wrong,1);
-  const acc=Math.round((session.correct/denom)*100);
+  const leveledUp=STATE.level>prevLevel;
 
+  if(isLearnQuiz){
+    // Show dedicated lesson complete overlay
+    showLessonComplete(acc, leveledUp, justUnlockedLesson);
+  } else {
+    // Regular result screen for practice modes
+    showResultScreen(acc, leveledUp, justUnlockedLesson);
+  }
+}
+
+function showLessonComplete(acc, leveledUp, justUnlockedLesson){
+  // Populate overlay
+  $('lc-correct').textContent=session.correct;
+  $('lc-wrong').textContent=session.wrong;
+  $('lc-acc').textContent=acc+'%';
+  $('lc-xp-val').textContent='+'+session.xpGained+' XP';
+  $('lc-words').innerHTML=learnSession.words.map(w=>`<div class="lc-pill">${w.tag}</div>`).join('');
+
+  let burst,title,sub;
+  if(acc===100){burst='🏆';title='Perpekto!';sub='A perfect score. He\'s a natural!';}
+  else if(acc>=80){burst='🌟';title='Lesson Complete!';sub='Strong result — those words are locked in.';}
+  else if(acc>=60){burst='💪';title='Lesson Complete!';sub='Passed! Review missed words to strengthen them.';}
+  else{burst='📚';title='Almost there!';sub='Score 60%+ to complete the lesson. Keep going!';}
+
+  $('lc-burst').textContent=burst;
+  $('lc-title').textContent=title;
+  $('lc-sub').textContent=sub;
+
+  // Show overlay
+  $('lesson-complete-overlay').classList.add('show');
+
+  // Level up fires after overlay is visible, properly sequenced
+  if(leveledUp){
+    setTimeout(()=>{
+      $('levelup-msg').textContent=`You reached Level ${STATE.level}! Keep it up.`;
+      $('levelup-overlay').classList.add('show');
+    },800);
+  }
+
+  // Unlock toast after a beat
+  if(justUnlockedLesson){
+    setTimeout(()=>showUnlockToast(justUnlockedLesson), leveledUp?2400:1000);
+  }
+}
+
+function completeLessonAndGoHome(){
+  $('lesson-complete-overlay').classList.remove('show');
+  sessionEnded=false;
+  goHome();
+}
+
+function showResultScreen(acc, leveledUp, justUnlockedLesson){
   $('res-correct').textContent=session.correct;
   $('res-wrong').textContent=session.wrong;
   $('res-acc').textContent=acc+'%';
@@ -1461,14 +1557,13 @@ function endSession(){
 
   const ring=$('result-ring');
   ring.style.strokeDashoffset=339;
-  ring.className=acc>=80?`ring-fill ${isLearnQuiz?'rteal':'rgreen'}`:acc>=50?'ring-fill':'ring-fill';
+  ring.className=acc>=80?'ring-fill rgreen':acc>=50?'ring-fill':'ring-fill';
 
   let emoji,title,sub;
   if(acc===100){emoji='🏆';title='Perpekto!';sub='A perfect score. Absolutely flawless!';}
   else if(acc>=80){emoji='⭐';title='Magaling!';sub='Strong result. Streak stays alive!';}
   else if(acc>=60){emoji='💪';title='Mabuti!';sub='Good progress — keep pushing!';}
   else{emoji='📚';title='Subukan Ulit!';sub='Review and try again — it will click!';}
-  if(isLearnQuiz&&acc>=80){emoji='🌟';title='Natututo na siya!';sub='Lesson complete! New words unlocked.';}
   if(session.mode==='couples'&&session.correct>7){emoji='💑';title='Sobrang Galing!';sub='He\'s learning fast with your help!';}
   if(session.mode==='speed'&&acc>=80){emoji='⚡';title='Bilis mo!';sub='Speed and accuracy — impressive!';}
 
@@ -1479,10 +1574,19 @@ function endSession(){
   showScreen('result');
   setTimeout(()=>{ring.style.strokeDashoffset=339-(acc/100)*339},150);
 
+  // Level up fires after screen settles
+  if(leveledUp){
+    setTimeout(()=>{
+      $('levelup-msg').textContent=`You reached Level ${STATE.level}! Keep it up.`;
+      $('levelup-overlay').classList.add('show');
+    },800);
+  }
+
   if(justUnlockedLesson){
-    setTimeout(()=>showUnlockToast(justUnlockedLesson),1200);
+    setTimeout(()=>showUnlockToast(justUnlockedLesson), leveledUp?2400:1200);
   }
 }
+
 
 // ═══════════════════════════════════════
 // PWA — MANIFEST, SERVICE WORKER, INSTALL
